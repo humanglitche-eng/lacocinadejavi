@@ -10,7 +10,8 @@ window.CARTA = [
     nombre: 'Carne',
     desc: 'Carne, cebolla, huevo y el toque de Javi.',
     color: '#e08f2c',
-    foto: null, // TODO: img/empanada.png cuando esté el asset real
+    foto: 'img/carne-rueda.jpg',   // medallón para la ruleta
+    hero: 'img/carne-hero.jpg',    // escena completa para el detalle
     estrella: true,
   },
   {
@@ -18,13 +19,15 @@ window.CARTA = [
     nombre: 'Pollo',
     desc: 'Pollo desmenuzado bien jugoso con verduras salteadas.',
     color: '#e8b64c',
-    foto: null, // TODO: img/empanada.png cuando esté el asset real
+    foto: null, // TODO: generar hero estilo "CARNE" y correr el recorte
+    hero: null,
   },
   {
     id: 'jamon-queso',
     nombre: 'Jamón y queso',
     desc: 'Clásica infalible: jamón cocido y muzzarella que se estira.',
     color: '#f0cf7a',
-    foto: null, // TODO: img/empanada.png cuando esté el asset real
+    foto: null, // TODO: generar hero estilo "CARNE" y correr el recorte
+    hero: null,
   },
 ];

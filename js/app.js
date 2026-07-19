@@ -138,7 +138,9 @@
   }
   function pintarDetalle() {
     const p = CARTA[indiceDetalle];
-    $('#detalleVisual').innerHTML = p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : svgEmpanada(p.color);
+    const visual = p.hero || p.foto;
+    $('#detalleVisual').classList.toggle('hero', !!p.hero);
+    $('#detalleVisual').innerHTML = visual ? `<img src="${visual}" alt="${p.nombre}">` : svgEmpanada(p.color);
     $('#detalleNombre').textContent = p.nombre + (p.estrella ? ' ★' : '');
     $('#detalleDesc').textContent = p.desc;
     $('#detalleCant').textContent = cantidadTemp;
