@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La cocina de Javi — Empanadas caseras en La Plata</title>
+  <meta name="description" content="Empanadas caseras hechas con amor, recién horneadas. Girá la ruleta, armá tu docena y votá el menú de la semana. Promo docena $20.000.">
+  <meta property="og:title" content="La cocina de Javi — Empanadas caseras">
+  <meta property="og:description" content="Girá la ruleta, armá tu docena y votá el menú de la semana. ¡Compartí lo bueno!">
+  <meta property="og:image" content="img/promo-docena.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=Archivo+Black&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2314110d' stroke='%23f2a922' stroke-width='4'/><text x='50' y='66' text-anchor='middle' font-size='44'>🥟</text></svg>">
+</head>
+<body>
+
+  <!-- logo badge reutilizable -->
+  <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="logoJavi" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="57" fill="#14110d" stroke="#f7ead6" stroke-width="2.5"/>
+      <circle cx="60" cy="60" r="50" fill="none" stroke="#f7ead6" stroke-width="1" stroke-dasharray="3 4" opacity=".6"/>
+      <!-- gorro de cocinero -->
+      <g transform="translate(60 30)">
+        <path d="M-11 6 a7 7 0 0 1 3 -13 a8.5 8.5 0 0 1 16 0 a7 7 0 0 1 3 13 Z" fill="#f7ead6"/>
+        <rect x="-10" y="6" width="20" height="5" rx="2" fill="#f7ead6"/>
+      </g>
+      <text x="60" y="60" text-anchor="middle" fill="#f7ead6" font-family="Caveat, cursive" font-size="21" font-weight="600">La cocina</text>
+      <text x="60" y="74" text-anchor="middle" fill="#f7ead6" font-family="Caveat, cursive" font-size="12">— de —</text>
+      <text x="60" y="98" text-anchor="middle" fill="#f2a922" font-family="Caveat, cursive" font-size="34" font-weight="700" transform="rotate(-4 60 92)">Javi</text>
+    </symbol>
+  </svg>
+
+  <header class="top">
+    <a class="logo-badge" href="#">
+      <svg><use href="#logoJavi"/></svg>
+      <span class="logo-texto"><b>La cocina</b><span>de Javi</span></span>
+    </a>
+    <nav>
+      <a href="#carta">Carta</a>
+      <a href="#votacion">Votación</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ HERO + RULETA ============ -->
+    <section class="hero" id="carta">
+      <div class="contenedor">
+        <span class="kicker">Recién horneadas · Hechas con amor</span>
+        <h1>Girá la ruleta <span class="script">y armá tu docena</span></h1>
+        <p class="sub">Empanadas caseras en La Plata. Elegí tus sabores, pedí y listo.</p>
+
+        <div class="aviso-demo" style="display:none;max-width:420px;margin:1rem auto 0">
+          🔧 MODO DEMO — los pedidos y votos aún no llegan a una base real.
+        </div>
+
+        <div class="rueda-envoltorio">
+          <div class="rueda-marca"></div>
+          <div class="rueda" id="rueda"></div>
+          <div class="rueda-centro"><svg><use href="#logoJavi"/></svg></div>
+        </div>
+
+        <div class="rueda-pie">
+          <div class="nombre-activo" id="nombreActivo"></div>
+          <div class="pista">Girá la rueda o tocá un sabor</div>
+          <p style="margin-top:1rem">
+            <button class="btn btn-amarillo" id="btnElegir">Elegir este sabor</button>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROMO ============ -->
+    <section id="promo">
+      <div class="contenedor">
+        <div class="promo-tarjeta">
+          <img src="img/promo-docena.jpg" alt="Promo docena de empanadas $20.000">
+          <div class="promo-texto">
+            <h2>Promo <em>docena</em></h2>
+            <div class="promo-precio">$20.000</div>
+            <p>Doce empanadas de los sabores que quieras, mezclá como más te guste. ¡Compartí lo bueno!</p>
+            <div class="promo-sellos">
+              <span>★ Hechas con amor</span>
+              <span>🔥 Recién horneadas</span>
+              <span>♥ Sabor que encanta</span>
+            </div>
+            <p><a class="btn btn-amarillo" href="#carta">Armar mi docena</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VOTACIÓN ============ -->
+    <section id="votacion">
+      <div class="contenedor">
+        <div class="seccion-cabeza">
+          <h2>El menú <em>lo elegís vos</em></h2>
+          <p>Cada semana Javi propone 5 platos. Votás el tuyo, y si entre todos completamos el cupo, se cocina el más votado.</p>
+        </div>
+        <div class="votacion-tarjeta" id="votacionTarjeta">
+          <div class="dias-tira" id="diasTira"></div>
+          <div class="votacion-grito" id="votacionGrito"></div>
+          <div class="opciones-voto" id="opcionesVoto"></div>
+          <div class="cupo-barra"><div class="cupo-relleno" id="cupoRelleno"></div></div>
+          <div class="cupo-texto" id="cupoTexto"></div>
+          <form class="votacion-form" id="formVoto">
+            <div class="fila-2">
+              <div class="campo"><label>Tu nombre</label><input name="vnombre" required placeholder="Ej: Caro"></div>
+              <div class="campo"><label>Porciones</label>
+                <select name="vporciones"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+              </div>
+            </div>
+            <div class="campo"><label>WhatsApp (para avisarte)</label><input name="vtelefono" type="tel" required placeholder="221 ..."></div>
+            <button class="btn btn-amarillo" type="submit" id="btnVotar" disabled>Elegí un plato para votar</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACTO ============ -->
+    <section id="contacto">
+      <div class="contenedor">
+        <div class="seccion-cabeza"><h2>Hablá <em>con Javi</em></h2></div>
+        <div class="contacto-grid">
+          <a class="contacto-item" id="waLink" target="_blank" rel="noopener">
+            <span class="icono">💬</span>
+            <span><small>WhatsApp</small>Pedí directo por chat</span>
+          </a>
+          <a class="contacto-item" id="telLink">
+            <span class="icono">📞</span>
+            <span><small>Teléfono</small><span id="telTexto"></span></span>
+          </a>
+          <a class="contacto-item" id="igLink" target="_blank" rel="noopener" style="display:none">
+            <span class="icono">📸</span>
+            <span><small>Instagram</small>Mirá lo que sale del horno</span>
+          </a>
+          <div class="contacto-item">
+            <span class="icono">📍</span>
+            <span><small>Zona</small><span id="zonaTexto"></span></span>
+          </div>
+          <div class="contacto-item">
+            <span class="icono">🕐</span>
+            <span><small>Horario</small><span id="horarioTexto"></span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section id="faq">
+      <div class="contenedor">
+        <div class="seccion-cabeza"><h2>Preguntas <em>frecuentes</em></h2></div>
+        <details class="faq">
+          <summary>¿Cómo pido?</summary>
+          <p>Girá la ruleta, elegí sabores y cantidades, y tocá el botón de pedido. Te llega la confirmación por WhatsApp. También podés escribirle directo a Javi.</p>
+        </details>
+        <details class="faq">
+          <summary>¿Hacen envíos?</summary>
+          <p>Sí, retiro o envío a coordinar según la zona. Lo definís al armar el pedido y lo confirmamos por WhatsApp.</p>
+        </details>
+        <details class="faq">
+          <summary>¿Puedo mezclar sabores en la docena?</summary>
+          <p>¡Obvio! La promo docena a $20.000 vale mezclando los sabores que quieras.</p>
+        </details>
+        <details class="faq">
+          <summary>¿Cómo funciona la votación del menú?</summary>
+          <p>Cada semana Javi propone un plato especial con una fecha y un cupo de porciones. Te anotás con tu nombre y WhatsApp; si el cupo se completa, se cocina y te avisamos para coordinar la entrega. Si no se llega, no se cobra nada.</p>
+        </details>
+        <details class="faq">
+          <summary>¿Con cuánta anticipación tengo que pedir?</summary>
+          <p>Ideal el día anterior para pedidos grandes. Para docenas sueltas, consultá disponibilidad del día por WhatsApp.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>La cocina de Javi · La Plata · <span id="anio"></span></div>
+    <div class="firma">Hecho con 🥟 — sitio por Human Glitche</div>
+  </footer>
+
+  <!-- ============ DETALLE DE PLATO ============ -->
+  <div class="detalle" id="detalle">
+    <button class="detalle-cerrar" id="detalleCerrar" aria-label="Cerrar">×</button>
+    <div class="detalle-cuerpo">
+      <div class="detalle-visual" id="detalleVisual"></div>
+      <div class="detalle-nombre" id="detalleNombre"></div>
+      <p class="detalle-desc" id="detalleDesc"></p>
+      <div class="cantidad">
+        <button id="cantMenos" aria-label="Menos">−</button>
+        <span class="num" id="detalleCant">1</span>
+        <button id="cantMas" aria-label="Más">+</button>
+      </div>
+      <button class="btn btn-amarillo detalle-agregar" id="detalleAgregar">Agregar al pedido</button>
+    </div>
+    <div class="detalle-flechas">
+      <button id="detallePrev" aria-label="Anterior">←</button>
+      <button id="detalleNext" aria-label="Siguiente">→</button>
+    </div>
+  </div>
+
+  <!-- ============ CARRITO ============ -->
+  <button class="carrito-fab oculto" id="carritoFab" aria-label="Ver pedido">
+    🥟<span class="globo" id="carritoGlobo">0</span>
+  </button>
+
+  <div class="hoja" id="hojaCarrito">
+    <div class="hoja-fondo" data-cerrar-hoja></div>
+    <div class="hoja-panel">
+      <div class="hoja-cabeza">
+        <h3>Tu pedido</h3>
+        <button data-cerrar-hoja aria-label="Cerrar">×</button>
+      </div>
+      <div class="hoja-cuerpo">
+        <div id="lineasPedido"></div>
+        <div class="resumen-precio" id="resumenPrecio"></div>
+
+        <form class="pedido-form" id="formPedido">
+          <div class="aviso-demo" style="display:none">🔧 MODO DEMO — confirmá por WhatsApp</div>
+          <div class="fila-2">
+            <div class="campo"><label>Tu nombre</label><input name="nombre" required></div>
+            <div class="campo"><label>WhatsApp</label><input name="telefono" type="tel" required placeholder="221 ..."></div>
+          </div>
+          <div class="campo">
+            <label>Entrega</label>
+            <select name="entrega" id="entregaSelect">
+              <option value="retiro">Retiro</option>
+              <option value="envio">Envío</option>
+            </select>
+          </div>
+          <div class="campo" id="campoDireccion" style="display:none">
+            <label>Dirección</label><input name="direccion" placeholder="Calle y número, barrio">
+          </div>
+          <div class="campo"><label>Nota (opcional)</label><input name="nota" placeholder="Ej: sin picante, timbre roto…"></div>
+          <button class="btn btn-amarillo" type="submit" id="btnEnviarPedido">Enviar pedido</button>
+        </form>
+
+        <div id="pedidoOk" style="display:none;gap:.8rem;text-align:center;padding:1rem 0">
+          <div style="font-size:2.4rem">🎉</div>
+          <p id="pedidoOkTexto"></p>
+          <a class="btn btn-verde" id="pedidoOkWa" target="_blank" rel="noopener">Confirmar por WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/app.js"></script>
+  <script>document.getElementById('anio').textContent = new Date().getFullYear();</script>
+</body>
+</html>

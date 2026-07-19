@@ -1,0 +1,63 @@
+rules_version = '2';
+
+// LA COCINA DE JAVI — Reglas de Firestore
+// Público: crear pedidos y votos (con validación de campos).
+// Javi (autenticado): leer y gestionar todo.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function esJavi() {
+      return request.auth != null;
+    }
+
+    function textoCorto(campo, max) {
+      return request.resource.data[campo] is string
+        && request.resource.data[campo].size() > 0
+        && request.resource.data[campo].size() <= max;
+    }
+
+    // Pedidos: cualquiera crea, solo Javi lee/gestiona (privacidad de clientes)
+    match /pedidos/{id} {
+      allow create: if textoCorto('nombre', 60)
+        && textoCorto('telefono', 30)
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 20
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.estado == 'nuevo';
+      allow read, update, delete: if esJavi();
+    }
+
+    // Votos: cualquiera crea y lee (nombre, opción y porciones; sin teléfono)
+    match /votos/{id} {
+      allow create: if textoCorto('nombre', 60)
+        && textoCorto('fecha', 12)
+        && textoCorto('opcion', 80)
+        && request.resource.data.porciones is number
+        && request.resource.data.porciones >= 1
+        && request.resource.data.porciones <= 10
+        && !('telefono' in request.resource.data);
+      allow read: if true;
+      allow update, delete: if esJavi();
+    }
+
+    // Contacto de los votantes: se crea junto al voto, solo Javi lo lee
+    match /votos_contacto/{id} {
+      allow create: if textoCorto('telefono', 30);
+      allow read, update, delete: if esJavi();
+    }
+
+    // Config pública (votación activa de la semana): lee cualquiera, escribe Javi
+    match /config/{id} {
+      allow read: if true;
+      allow write: if esJavi();
+    }
+
+    // Gastos: solo Javi
+    match /gastos/{id} {
+      allow read, write: if esJavi();
+    }
+  }
+}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Overlay OBS — La cocina de Javi</title>
+  <meta name="robots" content="noindex">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <style>
+    /* Browser Source 1920×1080, fondo transparente para OBS */
+    body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: transparent; font-family: 'Archivo Black', sans-serif; }
+    .esquina {
+      position: absolute; top: 40px; left: 40px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .esquina svg { width: 110px; height: 110px; filter: drop-shadow(0 6px 16px rgba(0,0,0,.5)); }
+    .vivo {
+      background: #d8322c; color: #fff;
+      padding: 10px 22px; border-radius: 8px;
+      font-size: 26px; letter-spacing: .08em;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.4);
+    }
+    .vivo .punto { width: 14px; height: 14px; border-radius: 50%; background: #fff; animation: latir 1.2s infinite; }
+    @keyframes latir { 0%,100% { opacity: 1 } 50% { opacity: .25 } }
+    .banda {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: rgba(20,17,13,.92);
+      border-top: 4px solid #f2a922;
+      padding: 18px 0; white-space: nowrap; overflow: hidden;
+    }
+    .banda .texto {
+      display: inline-block; padding-left: 100%;
+      color: #f7ead6; font-size: 30px;
+      animation: pasar 25s linear infinite;
+    }
+    .banda .texto b { color: #f2a922; }
+    @keyframes pasar { to { transform: translateX(-200%) } }
+  </style>
+</head>
+<body>
+  <div class="esquina">
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="57" fill="#14110d" stroke="#f7ead6" stroke-width="2.5"/>
+      <g transform="translate(60 30)">
+        <path d="M-11 6 a7 7 0 0 1 3 -13 a8.5 8.5 0 0 1 16 0 a7 7 0 0 1 3 13 Z" fill="#f7ead6"/>
+        <rect x="-10" y="6" width="20" height="5" rx="2" fill="#f7ead6"/>
+      </g>
+      <text x="60" y="60" text-anchor="middle" fill="#f7ead6" font-family="Caveat, cursive" font-size="21" font-weight="600">La cocina</text>
+      <text x="60" y="74" text-anchor="middle" fill="#f7ead6" font-family="Caveat, cursive" font-size="12">— de —</text>
+      <text x="60" y="98" text-anchor="middle" fill="#f2a922" font-family="Caveat, cursive" font-size="34" font-weight="700" transform="rotate(-4 60 92)">Javi</text>
+    </svg>
+    <div class="vivo"><span class="punto"></span> EN VIVO — COCINANDO</div>
+  </div>
+
+  <div class="banda"><span class="texto" id="ticker">
+    🥟 <b>La cocina de Javi</b> — Promo docena $20.000 · Pedidos al 221-638-9534 · ¡Votá el menú de la semana en la web! 🥟
+  </span></div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/db.js"></script>
+  <script>
+    // si hay Firebase, la banda muestra la última comanda que entra
+    (async () => {
+      if (!window.DB.activo) return;
+      const { db } = await window.DB.firebase();
+      db.collection('pedidos').orderBy('ts', 'desc').limit(1).onSnapshot(q => {
+        const p = q.docs[0] && q.docs[0].data();
+        if (!p) return;
+        const items = (p.items || []).map(i => `${i.cant} × ${i.nombre}`).join(' · ');
+        document.getElementById('ticker').innerHTML =
+          `🔥 <b>¡Entró comanda!</b> ${p.nombre}: ${items} · <b>La cocina de Javi</b> · Pedidos al 221-638-9534 🥟`;
+      });
+    })();
+  </script>
+</body>
+</html>
