@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votación del barrio — La cocina de Javi</title>
+  <meta name="description" content="Votá qué comida casera querés que Javi cocine: guisos, pastas, milanesas y más. Si llegamos a 40 vecinos antes del 1 de octubre, arranca el menú semanal.">
+  <meta property="og:title" content="Votación del barrio — La cocina de Javi">
+  <meta property="og:description" content="Votá qué comida casera sumamos. ¡Sumate antes del 1 de octubre!">
+  <meta property="og:image" content="../img/promo-docena.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=Archivo+Black&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/estilo.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2314110d' stroke='%23f2a922' stroke-width='4'/><text x='50' y='66' text-anchor='middle' font-size='44'>🗳️</text></svg>">
+</head>
+<body>
+  <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="logoJavi" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="57" fill="#14110d" stroke="#f7ead6" stroke-width="2.5"/>
+      <g transform="translate(60 30)">
+        <path d="M-11 6 a7 7 0 0 1 3 -13 a8.5 8.5 0 0 1 16 0 a7 7 0 0 1 3 13 Z" fill="#f7ead6"/>
+        <rect x="-10" y="6" width="20" height="5" rx="2" fill="#f7ead6"/>
+      </g>
+      <text x="60" y="60" text-anchor="middle" fill="#f7ead6" font-family="Caveat, cursive" font-size="21" font-weight="600">La cocina</text>
+      <text x="60" y="74" text-anchor="middle" fill="#f7ead6" font-family="Caveat, cursive" font-size="12">— de —</text>
+      <text x="60" y="98" text-anchor="middle" fill="#f2a922" font-family="Caveat, cursive" font-size="34" font-weight="700" transform="rotate(-4 60 92)">Javi</text>
+    </symbol>
+  </svg>
+
+  <header class="top">
+    <a class="logo-badge" href="../">
+      <svg><use href="#logoJavi"/></svg>
+      <span class="logo-texto"><b>La cocina</b><span>de Javi</span></span>
+    </a>
+    <nav>
+      <a href="../#carta">Carta</a>
+      <a href="./" aria-current="page" style="color:var(--amarillo);opacity:1">Votación</a>
+      <a href="../#contacto">Contacto</a>
+    </nav>
+  </header>
+
+  <main id="votoContenido">
+    <!-- intro -->
+    <section class="voto-hero">
+      <span class="kicker">Proyecto del barrio 🗳️</span>
+      <h1>El menú lo elige <em>el barrio</em></h1>
+      <p>Javi arrancó con las empanadas, pero la idea es más grande: sumar <b>comida casera</b> —guisos, pastas, milanesas y más— elegida por los vecinos. Cada semana se votaría un plato y, si junta pedidos, se cocina.</p>
+      <div class="aviso-demo" style="display:none;max-width:420px;margin:1rem auto 0">
+        🔧 MODO DEMO — los votos aún no llegan a una base real.
+      </div>
+    </section>
+
+    <!-- meta + cuenta regresiva -->
+    <section class="voto-seccion">
+      <div class="meta-caja" id="metaCaja">
+        <div class="meta-numeros">
+          <div class="n"><b id="metaVotos">0</b><small>votos</small></div>
+          <div class="n"><b id="metaObjetivo">40</b><small>meta</small></div>
+          <div class="n"><b id="metaDias">—</b><small>días restantes</small></div>
+        </div>
+        <div class="cupo-barra"><div class="cupo-relleno" id="cupoRelleno"></div></div>
+        <div class="meta-texto" id="metaTexto"></div>
+      </div>
+    </section>
+
+    <!-- votar -->
+    <section class="voto-seccion">
+      <div class="seccion-cabeza">
+        <h2>Votá lo que <em>más te gustaría</em></h2>
+        <p>Elegí el plato que querés que Javi cocine. Tu voto suma para llegar a los 40.</p>
+      </div>
+      <div class="opciones-voto" id="opcionesVoto"></div>
+      <form class="votacion-form" id="formVoto" style="max-width:520px;margin:1.2rem auto 0">
+        <div class="fila-2">
+          <div class="campo"><label>Tu nombre</label><input name="vnombre" required placeholder="Ej: Caro"></div>
+          <div class="campo"><label>WhatsApp (para avisarte)</label><input name="vtelefono" type="tel" required placeholder="221 ..."></div>
+        </div>
+        <button class="btn btn-amarillo" type="submit" id="btnVotar" disabled>Elegí un plato para votar</button>
+      </form>
+    </section>
+
+    <!-- sugerir -->
+    <section class="voto-seccion">
+      <div class="seccion-cabeza">
+        <h2>¿Se te ocurre <em>otro plato?</em></h2>
+        <p>Sugerí tu comida casera favorita. Javi lee todas las sugerencias.</p>
+      </div>
+      <form class="sugerencia-form" id="formSugerencia">
+        <div class="fila-2">
+          <div class="campo"><label>Tu nombre</label><input name="snombre" required placeholder="Ej: Tute"></div>
+          <div class="campo"><label>Plato que sugerís</label><input name="splato" required placeholder="Ej: Ravioles de verdura"></div>
+        </div>
+        <button class="btn btn-borde" type="submit">Enviar sugerencia</button>
+        <p id="sugerenciaOk" hidden style="text-align:center;color:var(--amarillo);font-size:.9rem">¡Anotado! Gracias por la idea 🙌</p>
+      </form>
+    </section>
+
+    <!-- compartir -->
+    <section class="voto-seccion" style="text-align:center">
+      <div class="seccion-cabeza">
+        <h2>Corré <em>la voz</em></h2>
+        <p>Cuantos más vecinos voten, antes arranca. Compartilo con la gente del barrio.</p>
+      </div>
+      <div class="compartir">
+        <a class="btn btn-verde" id="compartirWa" target="_blank" rel="noopener">Compartir por WhatsApp</a>
+        <button class="btn btn-borde" id="compartirCopiar" type="button">Copiar link</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>La cocina de Javi · La Plata · <span id="anio"></span></div>
+    <div class="firma">Hecho con 🥟 — sitio por Human Glitche</div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/util.js"></script>
+  <script src="../js/db.js"></script>
+  <script src="../js/votacion.js"></script>
+  <script>document.getElementById('anio').textContent = new Date().getFullYear();</script>
+</body>
+</html>

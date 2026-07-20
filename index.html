@@ -39,7 +39,7 @@
     </a>
     <nav>
       <a href="#carta">Carta</a>
-      <a href="#votacion">Votación</a>
+      <a href="votacion/">Votación</a>
       <a href="#contacto">Contacto</a>
     </nav>
   </header>
@@ -51,6 +51,10 @@
         <div class="lienzo activa" id="lienzoA"></div>
         <div class="lienzo" id="lienzoB"></div>
         <div class="escena-scrim"></div>
+
+        <div class="estado-pill" id="estadoPill" hidden>
+          <span class="estado-punto"></span><span id="estadoTexto"></span>
+        </div>
 
         <button class="escena-flecha izq" id="escenaPrev" aria-label="Sabor anterior">‹</button>
         <button class="escena-flecha der" id="escenaNext" aria-label="Siguiente sabor">›</button>
@@ -93,30 +97,17 @@
       </div>
     </section>
 
-    <!-- ============ VOTACIÓN ============ -->
-    <section id="votacion">
+    <!-- ============ TEASER VOTACIÓN ============ -->
+    <section id="votacion-teaser">
       <div class="contenedor">
-        <div class="seccion-cabeza">
-          <h2>El menú <em>lo elegís vos</em></h2>
-          <p>Cada semana Javi propone 5 platos. Votás el tuyo, y si entre todos completamos el cupo, se cocina el más votado.</p>
-        </div>
-        <div class="votacion-tarjeta" id="votacionTarjeta">
-          <div class="dias-tira" id="diasTira"></div>
-          <div class="votacion-grito" id="votacionGrito"></div>
-          <div class="opciones-voto" id="opcionesVoto"></div>
-          <div class="cupo-barra"><div class="cupo-relleno" id="cupoRelleno"></div></div>
-          <div class="cupo-texto" id="cupoTexto"></div>
-          <form class="votacion-form" id="formVoto">
-            <div class="fila-2">
-              <div class="campo"><label>Tu nombre</label><input name="vnombre" required placeholder="Ej: Caro"></div>
-              <div class="campo"><label>Porciones</label>
-                <select name="vporciones"><option>1</option><option>2</option><option>3</option><option>4</option></select>
-              </div>
-            </div>
-            <div class="campo"><label>WhatsApp (para avisarte)</label><input name="vtelefono" type="tel" required placeholder="221 ..."></div>
-            <button class="btn btn-amarillo" type="submit" id="btnVotar" disabled>Elegí un plato para votar</button>
-          </form>
-        </div>
+        <a class="teaser-voto" href="votacion/">
+          <div class="teaser-voto-txt">
+            <span class="kicker">Proyecto del barrio 🗳️</span>
+            <h2>Sumá <em>comida casera</em> a la cocina</h2>
+            <p>Guisos, milanesas, pastas… Votá qué querés que Javi cocine. Si llegamos a 40 vecinos antes del 1 de octubre, arranca.</p>
+          </div>
+          <span class="btn btn-amarillo">Ver la votación →</span>
+        </a>
       </div>
     </section>
 
@@ -154,24 +145,24 @@
       <div class="contenedor">
         <div class="seccion-cabeza"><h2>Preguntas <em>frecuentes</em></h2></div>
         <details class="faq">
-          <summary>¿Cómo pido?</summary>
-          <p>Girá la ruleta, elegí sabores y cantidades, y tocá el botón de pedido. Te llega la confirmación por WhatsApp. También podés escribirle directo a Javi.</p>
+          <summary>¿Cuándo atienden?</summary>
+          <p>Viernes, sábados y domingos de 19 a 22 h. Fuera de ese horario podés dejar tu pedido igual y lo preparamos en el próximo turno.</p>
         </details>
         <details class="faq">
-          <summary>¿Hacen envíos?</summary>
-          <p>Sí, retiro o envío a coordinar según la zona. Lo definís al armar el pedido y lo confirmamos por WhatsApp.</p>
+          <summary>¿Cómo pido?</summary>
+          <p>Elegí el sabor, la cantidad y tocá el botón de pedido. Te llega la confirmación por WhatsApp. También podés escribirle directo a Javi.</p>
+        </details>
+        <details class="faq">
+          <summary>¿Hacen envíos? ¿Y take away?</summary>
+          <p>Hacemos <b>envíos en un radio cercano</b> al punto central (a coordinar por WhatsApp). Y si estás en el <b>cuadro de La Plata</b> (el casco urbano), podés pasar a retirar por <b>take away</b>. Lo elegís al armar el pedido.</p>
         </details>
         <details class="faq">
           <summary>¿Puedo mezclar sabores en la docena?</summary>
           <p>¡Obvio! La promo docena a $20.000 vale mezclando los sabores que quieras.</p>
         </details>
         <details class="faq">
-          <summary>¿Cómo funciona la votación del menú?</summary>
-          <p>Cada semana Javi propone un plato especial con una fecha y un cupo de porciones. Te anotás con tu nombre y WhatsApp; si el cupo se completa, se cocina y te avisamos para coordinar la entrega. Si no se llega, no se cobra nada.</p>
-        </details>
-        <details class="faq">
-          <summary>¿Con cuánta anticipación tengo que pedir?</summary>
-          <p>Ideal el día anterior para pedidos grandes. Para docenas sueltas, consultá disponibilidad del día por WhatsApp.</p>
+          <summary>¿Qué es la votación del barrio?</summary>
+          <p>Es un proyecto para sumar comida casera (guisos, milanesas, pastas y más) a la cocina. Votás qué te gustaría y sugerís platos. Si llegamos a 40 vecinos anotados antes del 1 de octubre, arranca el sistema de menú semanal. <a href="votacion/">Mirá la votación →</a></p>
         </details>
       </div>
     </section>
@@ -215,6 +206,7 @@
         <button data-cerrar-hoja aria-label="Cerrar">×</button>
       </div>
       <div class="hoja-cuerpo">
+        <div class="aviso-cerrado" id="avisoCerrado" hidden></div>
         <div id="lineasPedido"></div>
         <div class="resumen-precio" id="resumenPrecio"></div>
 
@@ -227,10 +219,11 @@
           <div class="campo">
             <label>Entrega</label>
             <select name="entrega" id="entregaSelect">
-              <option value="retiro">Retiro</option>
-              <option value="envio">Envío</option>
+              <option value="takeaway">Take away (retiro en el cuadro)</option>
+              <option value="envio">Envío (radio cercano)</option>
             </select>
           </div>
+          <p class="entrega-nota" id="entregaNota"></p>
           <div class="campo" id="campoDireccion" style="display:none">
             <label>Dirección</label><input name="direccion" placeholder="Calle y número, barrio">
           </div>
@@ -250,6 +243,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="js/config.js"></script>
+  <script src="js/util.js"></script>
   <script src="js/menu.js"></script>
   <script src="js/db.js"></script>
   <script src="js/app.js"></script>

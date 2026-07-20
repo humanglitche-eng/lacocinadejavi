@@ -213,7 +213,7 @@
     return encodeURIComponent(
       `¡Hola Javi! 👋 Quiero hacer un pedido:\n\n${lineas.join('\n')}\n\n` +
       `(${partes.join(' + ')}) Total: ${fmt(total)}\n\n` +
-      `Nombre: ${datos.nombre}\nEntrega: ${datos.entrega}${datos.direccion ? '\nDirección: ' + datos.direccion : ''}` +
+      `Nombre: ${datos.nombre}\nEntrega: ${datos.entrega === 'envio' ? 'Envío' : 'Take away (retiro)'}${datos.direccion ? '\nDirección: ' + datos.direccion : ''}` +
       (datos.nota ? `\nNota: ${datos.nota}` : '')
     );
   }
@@ -248,87 +248,29 @@
     }
     btn.disabled = false; btn.textContent = 'Enviar pedido';
   });
-  $('#entregaSelect').addEventListener('change', e => {
-    $('#campoDireccion').style.display = e.target.value === 'envio' ? 'grid' : 'none';
-  });
-
-  /* ==================== VOTACIÓN (5 variantes) ==================== */
-  const DIAS = ['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA'];
-  let opcionElegida = null;
-
-  async function pintarVotacion() {
-    const v = await window.DB.obtenerVotacion();
-    const caja = $('#votacionTarjeta');
-    if (!v || !v.activa) {
-      caja.innerHTML = '<p style="opacity:.7;text-align:center">Por ahora no hay votación abierta. ¡Atento a la próxima!</p>';
-      return;
-    }
-    const objetivo = new Date(v.fecha + 'T12:00:00');
-    // tira de días: desde hoy hasta el objetivo (mínimo 7 días)
-    const hoy = new Date(); hoy.setHours(12, 0, 0, 0);
-    const nDias = Math.max(7, Math.round((objetivo - hoy) / 86400000) + 1);
-    let tira = '';
-    for (let i = 0; i < nDias; i++) {
-      const d = new Date(hoy.getTime() + i * 86400000);
-      const es = d.toDateString() === objetivo.toDateString();
-      tira += `<div class="dia ${es ? 'objetivo' : ''}">${DIAS[d.getDay()]}<b>${d.getDate()}</b></div>`;
-    }
-    $('#diasTira').innerHTML = tira;
-    const tiraEl = $('#diasTira'), objEl = tiraEl.querySelector('.dia.objetivo');
-    if (objEl) tiraEl.scrollLeft = Math.max(0, objEl.offsetLeft - tiraEl.clientWidth / 2 + objEl.clientWidth / 2);
-    const fechaTxt = objetivo.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' });
-    $('#votacionGrito').innerHTML = `Hoy se vota el menú para <span style="color:var(--amarillo)">${fechaTxt}</span> — elegí tu plato. Si completamos el cupo… <span style="color:var(--amarillo)">¡se cocina el más votado!</span>`;
-
-    // las 5 variantes con su barra de votos
-    const maxVotos = Math.max(1, ...Object.values(v.porOpcion || {}));
-    $('#opcionesVoto').innerHTML = (v.opciones || []).map(o => {
-      const n = (v.porOpcion && v.porOpcion[o]) || 0;
-      const lider = n > 0 && n === maxVotos;
-      return `<button type="button" class="opcion-voto ${opcionElegida === o ? 'elegida' : ''} ${lider ? 'lider' : ''}" data-opcion="${o}">
-        <span class="opcion-nombre">${lider ? '👑 ' : ''}${o}</span>
-        <span class="opcion-barra"><span style="width:${Math.round(n / maxVotos * 100)}%"></span></span>
-        <span class="opcion-votos">${n}</span>
-      </button>`;
-    }).join('');
-    $$('.opcion-voto').forEach(b => b.addEventListener('click', () => {
-      opcionElegida = b.dataset.opcion;
-      $$('.opcion-voto').forEach(x => x.classList.toggle('elegida', x.dataset.opcion === opcionElegida));
-      const btn = $('#btnVotar');
-      btn.disabled = false;
-      btn.textContent = `Votar ${opcionElegida}`;
-    }));
-
-    const pct = Math.min(100, Math.round((v.anotados / v.cupo) * 100));
-    $('#cupoRelleno').style.width = pct + '%';
-    $('#cupoTexto').innerHTML = v.anotados >= v.cupo
-      ? `<b>¡CUPO COMPLETO!</b> 🎉 Se cocina el más votado. Los anotados ya tienen su porción.`
-      : `<b>${v.anotados}</b> de <b>${v.cupo}</b> porciones anotadas — faltan ${v.cupo - v.anotados} para que se cocine`;
-    $('#formVoto').dataset.fecha = v.fecha;
+  function pintarEntregaNota() {
+    const val = $('#entregaSelect').value;
+    $('#campoDireccion').style.display = val === 'envio' ? 'grid' : 'none';
+    $('#entregaNota').textContent = val === 'envio'
+      ? CFG.entrega.envio : CFG.entrega.takeAway;
   }
+  $('#entregaSelect').addEventListener('change', pintarEntregaNota);
 
-  $('#formVoto').addEventListener('submit', async e => {
-    e.preventDefault();
-    const f = e.target;
-    if (!opcionElegida) { toast('Elegí un plato primero 🍲'); return; }
-    try {
-      await window.DB.guardarVoto({
-        fecha: f.dataset.fecha,
-        opcion: opcionElegida,
-        nombre: f.vnombre.value.trim(),
-        telefono: f.vtelefono.value.trim(),
-        porciones: parseInt(f.vporciones.value, 10) || 1,
-      });
-      toast(`¡Voto para ${opcionElegida}! 🙌 Te avisamos si se cocina`);
-      f.reset();
-      opcionElegida = null;
-      const btn = $('#btnVotar');
-      btn.disabled = true; btn.textContent = 'Elegí un plato para votar';
-      pintarVotacion();
-    } catch (err) {
-      toast('No se pudo votar 😕 Probá de nuevo');
-      console.error(err);
+  /* ==================== ESTADO DE ATENCIÓN ==================== */
+  function pintarEstado() {
+    const e = window.UTIL.estadoAtencion();
+    const pill = $('#estadoPill');
+    pill.hidden = false;
+    pill.classList.toggle('cerrado', !e.abierto);
+    $('#estadoTexto').textContent = e.abierto ? e.texto : `Cerrado · ${e.texto}`;
+    // aviso dentro del carrito cuando está cerrado
+    const aviso = $('#avisoCerrado');
+    if (e.abierto) { aviso.hidden = true; }
+    else {
+      aviso.hidden = false;
+      aviso.innerHTML = `🕐 <b>Ahora estamos cerrados.</b> ${e.texto}. Podés dejar tu pedido igual y lo preparamos en el próximo turno.`;
     }
-  });
+  }
 
   /* ==================== VARIOS ==================== */
   let toastTimer;
@@ -358,6 +300,8 @@
   /* init */
   construirHero();
   pintarCarrito();
-  pintarVotacion();
+  pintarEstado();
+  pintarEntregaNota();
   pintarContacto();
+  setInterval(pintarEstado, 60000); // refresca abierto/cerrado cada minuto
 })();

@@ -55,6 +55,14 @@ service cloud.firestore {
       allow write: if esJavi();
     }
 
+    // Sugerencias de platos: cualquiera crea (validado), solo Javi lee
+    // (privado para evitar contenido ofensivo mostrado al público)
+    match /sugerencias/{id} {
+      allow create: if textoCorto('nombre', 60)
+        && textoCorto('plato', 80);
+      allow read, update, delete: if esJavi();
+    }
+
     // Gastos: solo Javi
     match /gastos/{id} {
       allow read, write: if esJavi();

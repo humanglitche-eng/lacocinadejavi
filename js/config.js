@@ -10,9 +10,23 @@ window.CONFIG = {
     // WhatsApp en formato internacional sin signos (54 9 + área + número)
     whatsapp: '5492216389534',
     instagram: '',                 // TODO: handle de IG de Javi (sin @)
-    zona: 'La Plata y alrededores',// TODO: confirmar zona de entrega
-    horario: 'Pedidos de 10 a 21 h', // TODO: confirmar
-    entrega: 'Retiro o envío a coordinar', // TODO: confirmar costo de envío
+    zona: 'Envíos a radio cercano · Take away en el cuadro de La Plata',
+    horario: 'Viernes a domingos, 19 a 22 h',
+  },
+
+  /* Horario de atención: se muestra "Abierto/Cerrado" según esto.
+     días con 0=Dom, 1=Lun … 6=Sáb → viernes, sábado y domingo. */
+  horario: {
+    dias: [5, 6, 0],
+    desde: 19, hasta: 22,          // de 19:00 a 22:00
+    etiqueta: 'Viernes a domingos, de 19 a 22 h',
+  },
+
+  /* Entrega. TODO: cargar la dirección/esquina del punto central real. */
+  entrega: {
+    puntoCentral: 'La Plata (punto central a confirmar)',
+    envio: 'Hacemos envíos en un radio cercano al punto central (a coordinar por WhatsApp).',
+    takeAway: 'Take away (retiro) para quienes estén en el cuadro de La Plata (casco urbano).',
   },
 
   precios: {
@@ -36,20 +50,35 @@ window.CONFIG = {
     appId: '1:720128977718:web:c54f02266e21d8aa182197',
   },
 
-  /* Votación demo: se usa solo si Firebase no está configurado.
-     Con Firebase real, esto vive en el doc config/votacion.
-     Se vota UN plato entre 5 variantes; si se completa el cupo,
-     Javi cocina el más votado. */
+  /* ------------------------------------------------------------
+     VOTACIÓN — proyecto en pre-lanzamiento.
+     Meta: reunir 40 votos antes del 1/10 para arrancar el sistema
+     de votación semanal de comida casera. Cada persona vota UN plato
+     y puede sugerir otros. Con Firebase real esto vive en el doc
+     config/votacion (campos: activa, cupo=meta, fecha=deadline,
+     opciones=nombres de las variedades). Editable desde la consola.
+     ------------------------------------------------------------ */
+  votacion: {
+    meta: 40,
+    fecha: '2026-10-01',          // fecha límite del pre-lanzamiento
+    // variedades de comida casera posibles (la gente vota y sugiere más)
+    variedades: [
+      { nombre: 'Guiso de lentejas', emoji: '🍲' },
+      { nombre: 'Locro', emoji: '🌽' },
+      { nombre: 'Pastel de papa', emoji: '🥧' },
+      { nombre: 'Milanesas con puré', emoji: '🍗' },
+      { nombre: 'Tallarines caseros', emoji: '🍝' },
+      { nombre: 'Pizza casera', emoji: '🍕' },
+      { nombre: 'Canelones', emoji: '🥟' },
+      { nombre: 'Ñoquis', emoji: '🥔' },
+    ],
+  },
+
+  /* Fallback demo (solo si Firebase no está configurado). */
   votacionDemo: {
     activa: true,
-    fecha: '2026-07-29',          // miércoles 29/07 (como el boceto)
-    cupo: 20,                     // porciones para que se active la cocina
-    opciones: [                   // TODO: variantes reales de Javi
-      'Guiso de lentejas',
-      'Locro criollo',
-      'Pastel de papa',
-      'Milanesas con puré',
-      'Tallarines caseros',
-    ],
+    fecha: '2026-10-01',
+    cupo: 40,                     // meta de votos
+    opciones: ['Guiso de lentejas', 'Locro', 'Pastel de papa', 'Milanesas con puré', 'Tallarines caseros', 'Pizza casera', 'Canelones', 'Ñoquis'],
   },
 };

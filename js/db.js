@@ -61,28 +61,31 @@ window.DB = (function () {
   }
 
   function _resumirVotos(v, votos) {
-    v.anotados = votos.reduce((a, x) => a + (x.porciones || 1), 0);
+    // pre-lanzamiento: cada voto = 1 persona hacia la meta
+    v.anotados = votos.length;
     v.porOpcion = {};
     (v.opciones || []).forEach(o => { v.porOpcion[o] = 0; });
-    votos.forEach(x => {
-      if (x.opcion in v.porOpcion) v.porOpcion[x.opcion] += (x.porciones || 1);
-    });
+    votos.forEach(x => { if (x.opcion in v.porOpcion) v.porOpcion[x.opcion] += 1; });
     return v;
   }
 
+  // La campaña (meta, fecha, opciones) vive en CONFIG.votacion (versionado).
+  // Firestore sólo guarda los votos; acá los contamos por la fecha de campaña.
   async function obtenerVotacion() {
+    const cv = window.CONFIG.votacion;
+    const v = {
+      activa: true,
+      meta: cv.meta, cupo: cv.meta,
+      fecha: cv.fecha,
+      opciones: (cv.variedades || []).map(x => x.nombre),
+    };
     if (!activo) {
-      const v = { ...window.CONFIG.votacionDemo, demo: true };
+      v.demo = true;
       return _resumirVotos(v, _ls('lcj_votos').filter(x => x.fecha === v.fecha));
     }
     const { db } = await _firebase();
-    const doc = await db.collection('config').doc('votacion').get();
-    const v = doc.exists ? doc.data() : { activa: false };
-    if (v.activa) {
-      const q = await db.collection('votos').where('fecha', '==', v.fecha).get();
-      _resumirVotos(v, q.docs.map(d => d.data()));
-    }
-    return v;
+    const q = await db.collection('votos').where('fecha', '==', v.fecha).get();
+    return _resumirVotos(v, q.docs.map(d => d.data()));
   }
 
   async function guardarVoto(voto) {
@@ -102,5 +105,17 @@ window.DB = (function () {
     return { demo: false };
   }
 
-  return { activo, firebase: _firebase, guardarPedido, obtenerVotacion, guardarVoto, _ls };
+  async function guardarSugerencia(sug) {
+    sug.ts = Date.now();
+    if (!activo) {
+      const arr = _ls('lcj_sugerencias'); arr.push({ id: _id(), ...sug });
+      _ls('lcj_sugerencias', arr);
+      return { demo: true };
+    }
+    const { db } = await _firebase();
+    await db.collection('sugerencias').add(sug);
+    return { demo: false };
+  }
+
+  return { activo, firebase: _firebase, guardarPedido, obtenerVotacion, guardarVoto, guardarSugerencia, _ls };
 })();

@@ -549,3 +549,98 @@ footer .firma { margin-top: .4rem; font-size: .74rem; }
   .logo-badge .logo-texto { display: none; }
   .top nav { gap: .8rem; }
 }
+
+/* ---------- estado de atención (pill en el hero) ---------- */
+.estado-pill {
+  position: absolute; z-index: 6;
+  top: 1rem; right: 1rem;
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .4rem .8rem; border-radius: 999px;
+  background: rgba(20,17,13,.62); backdrop-filter: blur(6px);
+  border: 1px solid var(--borde);
+  font-size: .8rem; font-weight: 600; color: var(--crema);
+}
+.estado-pill .estado-punto {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #4bd06a; box-shadow: 0 0 0 3px rgba(75,208,106,.25);
+}
+.estado-pill.cerrado .estado-punto { background: var(--rojo); box-shadow: 0 0 0 3px rgba(216,75,58,.25); }
+@media (max-width: 620px) { .estado-pill { top: .8rem; right: .8rem; font-size: .72rem; } }
+
+/* ---------- teaser votación en el home ---------- */
+.teaser-voto {
+  display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap;
+  justify-content: space-between;
+  background: linear-gradient(120deg, var(--carbon-2), var(--carbon));
+  border: 1px solid var(--borde); border-left: 5px solid var(--amarillo);
+  border-radius: 16px; padding: 1.6rem 1.8rem;
+  text-decoration: none; color: var(--crema);
+  transition: transform .2s, border-color .2s;
+}
+.teaser-voto:hover { transform: translateY(-2px); border-color: var(--amarillo); }
+.teaser-voto h2 { margin: .3rem 0; }
+.teaser-voto p { opacity: .8; max-width: 52ch; font-size: .95rem; }
+.teaser-voto .btn { flex: none; }
+
+/* ---------- notas de entrega / aviso cerrado ---------- */
+.entrega-nota { font-size: .8rem; opacity: .7; margin: -.2rem 0 .2rem; }
+.aviso-cerrado {
+  background: rgba(216,75,58,.12); border: 1px solid rgba(216,75,58,.4);
+  color: #f0b8b0; border-radius: 10px; padding: .7rem .9rem;
+  font-size: .85rem; margin-bottom: 1rem;
+}
+
+/* ============ PÁGINA DE VOTACIÓN ============ */
+.voto-hero {
+  text-align: center; padding: 3rem 1.2rem 1rem;
+  max-width: 640px; margin: 0 auto;
+}
+.voto-hero .kicker {
+  display: inline-block; font-family: var(--fuente-titulo); font-size: .7rem;
+  text-transform: uppercase; letter-spacing: .16em;
+  color: var(--negro); background: var(--amarillo);
+  padding: .3rem .8rem; border-radius: 3px; transform: rotate(-2deg);
+}
+.voto-hero h1 {
+  font-family: var(--fuente-titulo); text-transform: uppercase;
+  font-size: clamp(1.8rem, 6vw, 2.8rem); line-height: 1.08; margin: .8rem 0 .4rem;
+}
+.voto-hero h1 em {
+  font-family: var(--fuente-script); font-style: normal; text-transform: none;
+  color: var(--amarillo); font-size: 1.2em;
+}
+.voto-hero p { opacity: .82; }
+
+/* meta + cuenta regresiva */
+.meta-caja {
+  max-width: 640px; margin: 0 auto; padding: 1.4rem 1.6rem;
+  background: var(--carbon); border: 1px solid var(--borde);
+  border-radius: 16px; box-shadow: var(--sombra);
+}
+.meta-numeros { display: flex; gap: 1rem; justify-content: center; text-align: center; margin-bottom: .9rem; }
+.meta-numeros .n { flex: 1; }
+.meta-numeros .n b { display: block; font-family: var(--fuente-titulo); font-size: 1.9rem; color: var(--amarillo); }
+.meta-numeros .n small { opacity: .65; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; }
+.meta-texto { text-align: center; font-size: .9rem; opacity: .85; margin-top: .3rem; }
+.meta-texto b { color: var(--amarillo); }
+.meta-lleno .cupo-relleno { background: linear-gradient(90deg, #4bd06a, #7de89a); }
+
+/* variedades posibles */
+.variedades {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: .7rem; max-width: 720px; margin: 0 auto;
+}
+.variedad {
+  background: var(--carbon); border: 1px solid var(--borde);
+  border-radius: 12px; padding: 1rem .8rem; text-align: center;
+}
+.variedad .emoji { font-size: 1.8rem; }
+.variedad .vnombre { font-weight: 600; font-size: .9rem; margin-top: .3rem; }
+
+/* compartir */
+.compartir { display: flex; gap: .7rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+
+/* sugerencias */
+.sugerencia-form { display: grid; gap: .6rem; max-width: 520px; margin: 0 auto; }
+
+.voto-seccion { max-width: 760px; margin: 0 auto; }
