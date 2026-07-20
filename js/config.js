@@ -28,12 +28,12 @@ window.CONFIG = {
      pasa solo de MODO DEMO a modo real. Instrucciones: README.md
      -------------------------------------------------------- */
   firebase: {
-    apiKey: 'TU_API_KEY',
-    authDomain: 'TU_PROYECTO.firebaseapp.com',
-    projectId: 'TU_PROYECTO',
-    storageBucket: 'TU_PROYECTO.appspot.com',
-    messagingSenderId: 'TU_SENDER_ID',
-    appId: 'TU_APP_ID',
+    apiKey: 'AIzaSyBxbcPW48RIxv_KC64sCd1kjW2ARLrnTJ0',
+    authDomain: 'la-cocina-de-javi.firebaseapp.com',
+    projectId: 'la-cocina-de-javi',
+    storageBucket: 'la-cocina-de-javi.firebasestorage.app',
+    messagingSenderId: '720128977718',
+    appId: '1:720128977718:web:c54f02266e21d8aa182197',
   },
 
   /* Votación demo: se usa solo si Firebase no está configurado.

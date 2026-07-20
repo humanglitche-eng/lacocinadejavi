@@ -19,15 +19,15 @@ window.CARTA = [
     nombre: 'Pollo',
     desc: 'Pollo desmenuzado bien jugoso con verduras salteadas.',
     color: '#e8b64c',
-    foto: null, // TODO: generar hero estilo "CARNE" y correr el recorte
-    hero: null,
+    foto: 'img/pollo-rueda.jpg',
+    hero: 'img/pollo-hero.jpg',
   },
   {
     id: 'jamon-queso',
     nombre: 'Jamón y queso',
     desc: 'Clásica infalible: jamón cocido y muzzarella que se estira.',
     color: '#f0cf7a',
-    foto: null, // TODO: generar hero estilo "CARNE" y correr el recorte
-    hero: null,
+    foto: 'img/jamon-queso-rueda.jpg',
+    hero: 'img/jamon-queso-hero.jpg',
   },
 ];
