@@ -45,30 +45,31 @@
   </header>
 
   <main>
-    <!-- ============ HERO + RULETA ============ -->
-    <section class="hero" id="carta">
-      <div class="contenedor">
-        <span class="kicker">Recién horneadas · Hechas con amor</span>
-        <h1>Girá la ruleta <span class="script">y armá tu docena</span></h1>
-        <p class="sub">Empanadas caseras en La Plata. Elegí tus sabores, pedí y listo.</p>
+    <!-- ============ HERO CINEMATOGRÁFICO ============ -->
+    <section class="escenario" id="carta">
+      <div class="escena" id="escena">
+        <div class="lienzo activa" id="lienzoA"></div>
+        <div class="lienzo" id="lienzoB"></div>
+        <div class="escena-scrim"></div>
 
-        <div class="aviso-demo" style="display:none;max-width:420px;margin:1rem auto 0">
-          🔧 MODO DEMO — los pedidos y votos aún no llegan a una base real.
+        <button class="escena-flecha izq" id="escenaPrev" aria-label="Sabor anterior">‹</button>
+        <button class="escena-flecha der" id="escenaNext" aria-label="Siguiente sabor">›</button>
+
+        <div class="escena-texto" id="escenaTexto">
+          <span class="kicker">Recién horneadas · Hechas con amor</span>
+          <div class="aviso-demo" style="display:none;max-width:340px;margin:.6rem 0 0">
+            🔧 MODO DEMO — pedidos y votos aún no llegan a una base real.
+          </div>
+          <h1 class="escena-nombre" id="nombreActivo"></h1>
+          <p class="escena-desc" id="descActiva"></p>
+          <div class="escena-acciones">
+            <button class="btn btn-amarillo" id="btnElegir">Pedir esta 🥟</button>
+            <a class="btn btn-borde" href="#promo">Ver promo docena</a>
+          </div>
         </div>
 
-        <div class="rueda-envoltorio">
-          <div class="rueda-marca"></div>
-          <div class="rueda" id="rueda"></div>
-          <div class="rueda-centro"><svg><use href="#logoJavi"/></svg></div>
-        </div>
-
-        <div class="rueda-pie">
-          <div class="nombre-activo" id="nombreActivo"></div>
-          <div class="pista">Girá la rueda o tocá un sabor</div>
-          <p style="margin-top:1rem">
-            <button class="btn btn-amarillo" id="btnElegir">Elegir este sabor</button>
-          </p>
-        </div>
+        <div class="sellos" id="sellos"></div>
+        <div class="escena-pista">deslizá o tocá un sabor</div>
       </div>
     </section>
 

@@ -28,98 +28,83 @@
     </svg>`;
   }
 
-  /* ==================== RUEDA ==================== */
-  const rueda = $('#rueda');
+  /* ==================== HERO CINEMATOGRÁFICO ==================== */
   const N = CARTA.length;
-  const paso = 360 / N;
-  let angulo = 0;          // rotación actual de la rueda
   let indiceActivo = 0;
+  const escena = $('#escena');
+  const lienzoA = $('#lienzoA'), lienzoB = $('#lienzoB');
+  const sellosEl = $('#sellos');
+  let lienzoVisible = lienzoA;
 
-  function construirRueda() {
-    const radio = rueda.clientWidth / 2 - (rueda.clientWidth < 380 ? 40 : 52);
-    rueda.innerHTML = CARTA.map((p, i) => `
-      <div class="rueda-item" data-i="${i}">
-        <div class="disco">${p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : svgEmpanada(p.color)}</div>
-        <div class="etiqueta">${p.nombre}</div>
-      </div>`).join('');
-    $$('.rueda-item', rueda).forEach((el, i) => {
-      const a = i * paso - 90; // item 0 arriba
-      el.dataset.base = a;
-      posicionarItem(el, a, radio);
-      el.addEventListener('click', () => {
-        if (i === indiceActivo) abrirDetalle(i);
-        else girarHasta(i);
-      });
-    });
-    aplicarRotacion();
+  function construirHero() {
+    sellosEl.innerHTML = CARTA.map((p, i) => `
+      <button class="sello ${i === 0 ? 'activo' : ''}" data-i="${i}" aria-label="${p.nombre}">
+        <img src="${p.foto}" alt="${p.nombre}">
+      </button>`).join('');
+    $$('.sello', sellosEl).forEach(b => b.addEventListener('click', () => irA(+b.dataset.i)));
+    // precarga los hero para que el crossfade no parpadee
+    CARTA.forEach(p => { if (p.hero) { const im = new Image(); im.src = p.hero; } });
+    const p0 = CARTA[0];
+    lienzoA.style.backgroundImage = `url(${p0.hero || p0.foto})`;
+    pintarTexto(p0);
   }
 
-  function posicionarItem(el, aDeg, radio) {
-    const a = aDeg * Math.PI / 180;
-    el.style.transform = `translate(${Math.cos(a) * radio}px, ${Math.sin(a) * radio}px)`;
+  function pintarTexto(p) {
+    const nombre = $('#nombreActivo'), desc = $('#descActiva');
+    nombre.textContent = p.nombre + (p.estrella ? ' ★' : '');
+    desc.textContent = p.desc;
+    // reinicia la animación de entrada
+    [nombre, desc].forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
   }
 
-  function aplicarRotacion(animado) {
-    rueda.style.transition = animado ? 'transform .55s cubic-bezier(.2,.8,.2,1)' : 'none';
-    rueda.style.transform = `rotate(${angulo}deg)`;
-    const radio = rueda.clientWidth / 2 - (rueda.clientWidth < 380 ? 40 : 52);
-    $$('.rueda-item', rueda).forEach(el => {
-      // contra-rotamos cada item para que quede derecho…
-      const a = parseFloat(el.dataset.base) * Math.PI / 180;
-      el.style.transition = animado ? 'transform .55s cubic-bezier(.2,.8,.2,1)' : 'none';
-      el.style.transform = `translate(${Math.cos(a) * radio}px, ${Math.sin(a) * radio}px) rotate(${-angulo}deg)`;
-      // …pero la empanada real acompaña el giro completo (360°)
-      const visual = el.querySelector('.disco img, .disco svg');
-      if (visual) {
-        visual.style.transition = animado ? 'transform .55s cubic-bezier(.2,.8,.2,1)' : 'none';
-        visual.style.transform = `rotate(${angulo}deg)`;
-      }
-    });
-    // activo = el que quedó arriba
-    indiceActivo = ((Math.round(-angulo / paso) % N) + N) % N;
-    $$('.rueda-item', rueda).forEach((el, i) => el.classList.toggle('activo', i === indiceActivo));
-    $('#nombreActivo').textContent = CARTA[indiceActivo].nombre;
+  function irA(i) {
+    i = ((i % N) + N) % N;
+    if (i === indiceActivo) { abrirDetalle(i); return; }
+    indiceActivo = i;
+    const p = CARTA[i];
+    // crossfade: pinta en el lienzo oculto y lo revela
+    const oculto = lienzoVisible === lienzoA ? lienzoB : lienzoA;
+    oculto.style.transform = '';               // borra parallax residual
+    oculto.style.backgroundImage = `url(${p.hero || p.foto})`;
+    oculto.classList.remove('activa'); void oculto.offsetWidth; // reinicia ken burns
+    oculto.classList.add('activa');
+    lienzoVisible.classList.remove('activa');
+    lienzoVisible = oculto;
+    $$('.sello', sellosEl).forEach((b, k) => b.classList.toggle('activo', k === i));
+    pintarTexto(p);
   }
 
-  function girarHasta(i) {
-    // gira por el camino más corto hasta dejar i arriba
-    const objetivo = -i * paso;
-    let delta = ((objetivo - angulo) % 360 + 540) % 360 - 180;
-    angulo += delta;
-    aplicarRotacion(true);
-  }
-
-  // arrastre (pointer events)
-  let arrastrando = false, angPrevio = 0, centro = null, movido = 0;
-  function angPuntero(e) {
-    const r = rueda.getBoundingClientRect();
-    centro = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-    return Math.atan2(e.clientY - centro.y, e.clientX - centro.x) * 180 / Math.PI;
-  }
-  rueda.addEventListener('pointerdown', e => {
-    arrastrando = true; movido = 0; angPrevio = angPuntero(e);
-    rueda.setPointerCapture(e.pointerId);
-  });
-  rueda.addEventListener('pointermove', e => {
-    if (!arrastrando) return;
-    const a = angPuntero(e);
-    let d = a - angPrevio;
-    if (d > 180) d -= 360; if (d < -180) d += 360;
-    angulo += d; movido += Math.abs(d);
-    angPrevio = a;
-    aplicarRotacion(false);
-  });
-  rueda.addEventListener('pointerup', () => {
-    if (!arrastrando) return;
-    arrastrando = false;
-    angulo = Math.round(angulo / paso) * paso; // imán al más cercano
-    aplicarRotacion(true);
-  });
-  // si arrastró, cancelamos el click fantasma
-  rueda.addEventListener('click', e => { if (movido > 6) { e.stopPropagation(); } }, true);
-
+  $('#escenaPrev').addEventListener('click', () => irA(indiceActivo - 1));
+  $('#escenaNext').addEventListener('click', () => irA(indiceActivo + 1));
   $('#btnElegir').addEventListener('click', () => abrirDetalle(indiceActivo));
-  window.addEventListener('resize', () => { construirRueda(); });
+
+  // swipe + freno del autoplay al interactuar
+  let x0 = null, y0 = null, auto = null;
+  function pausar() { clearInterval(auto); auto = null; }
+  function reanudar() { if (!auto) auto = setInterval(() => irA(indiceActivo + 1), 6500); }
+  escena.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; pausar(); });
+  escena.addEventListener('pointerup', e => {
+    if (x0 == null) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) irA(indiceActivo + (dx < 0 ? 1 : -1));
+    reanudar();
+  });
+
+  // parallax suave con el mouse (desktop)
+  const finoMovil = window.matchMedia('(pointer: fine)').matches;
+  if (finoMovil) {
+    escena.addEventListener('pointermove', e => {
+      const r = escena.getBoundingClientRect();
+      const mx = (e.clientX - r.left) / r.width - .5, my = (e.clientY - r.top) / r.height - .5;
+      lienzoVisible.style.transform = `scale(1.1) translate(${mx * -16}px, ${my * -12}px)`;
+      $('#escenaTexto').style.transform = `translate(${mx * 8}px, ${my * 6}px)`;
+    });
+    escena.addEventListener('pointerleave', () => {
+      lienzoVisible.style.transform = '';
+      $('#escenaTexto').style.transform = '';
+    });
+  }
+  reanudar();
 
   /* ==================== DETALLE ==================== */
   const detalle = $('#detalle');
@@ -203,7 +188,7 @@
           <button data-op="+">+</button>
         </span>
       </div>`;
-    }).join('') || '<p style="opacity:.6;text-align:center;padding:1.5rem 0">Todavía no elegiste nada. Girá la ruleta 🎡</p>';
+    }).join('') || '<p style="opacity:.6;text-align:center;padding:1.5rem 0">Todavía no elegiste nada. Elegí un sabor 🥟</p>';
     $$('.linea-pedido button', cuerpo).forEach(b => b.addEventListener('click', () => {
       const id = b.closest('.linea-pedido').dataset.id;
       pedido[id] += b.dataset.op === '+' ? 1 : -1;
@@ -371,7 +356,7 @@
   }
 
   /* init */
-  construirRueda();
+  construirHero();
   pintarCarrito();
   pintarVotacion();
   pintarContacto();

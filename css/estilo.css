@@ -98,103 +98,125 @@ h2 em {
   color: var(--amarillo); font-weight: 700;
 }
 
-/* ---------- hero / ruleta ---------- */
-.hero { padding: 2.2rem 0 1rem; text-align: center; }
-.hero .kicker {
+/* ---------- hero cinematográfico ---------- */
+.escenario { position: relative; padding: 0; }
+.escena {
+  position: relative;
+  /* llena el espacio bajo el header (~57px) sin empujar el CTA fuera de vista */
+  height: min(calc(100svh - 58px), 640px);
+  min-height: 430px;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.escena:active { cursor: grabbing; }
+
+/* capas de imagen (crossfade + ken burns + parallax) */
+.lienzo {
+  position: absolute; inset: -6%;                 /* margen para el parallax */
+  background-size: cover; background-position: center;
+  opacity: 0;
+  transition: opacity .7s ease;
+  will-change: transform, opacity;
+}
+.lienzo.activa { opacity: 1; animation: kenburns 14s ease-out forwards; }
+@keyframes kenburns {
+  from { transform: scale(1.04); }
+  to   { transform: scale(1.12); }
+}
+
+/* velo para legibilidad del texto (oscurece abajo-izquierda) */
+.escena-scrim {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(20,17,13,.92) 0%, rgba(20,17,13,.35) 42%, rgba(20,17,13,0) 70%),
+    linear-gradient(to right, rgba(20,17,13,.7) 0%, rgba(20,17,13,0) 55%);
+}
+
+/* flechas */
+.escena-flecha {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(20,17,13,.5); color: var(--crema);
+  border: 1px solid var(--borde);
+  font-size: 1.7rem; line-height: 1;
+  backdrop-filter: blur(6px);
+  display: grid; place-items: center;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.escena-flecha:hover { background: var(--amarillo); color: var(--negro); border-color: var(--amarillo); }
+.escena-flecha.izq { left: 1rem; }
+.escena-flecha.der { right: 1rem; }
+
+/* texto sobre la escena */
+.escena-texto {
+  position: absolute; z-index: 4;
+  left: clamp(1.2rem, 5vw, 4rem); bottom: clamp(4.5rem, 9vh, 6rem);
+  max-width: 34ch;
+  will-change: transform;
+}
+.escena-texto .kicker {
   display: inline-block;
-  font-family: var(--fuente-titulo); font-size: .72rem;
-  text-transform: uppercase; letter-spacing: .18em;
+  font-family: var(--fuente-titulo); font-size: .68rem;
+  text-transform: uppercase; letter-spacing: .16em;
   color: var(--negro); background: var(--amarillo);
   padding: .3rem .8rem; border-radius: 3px;
   transform: rotate(-2deg);
 }
-.hero h1 {
-  font-family: var(--fuente-titulo);
-  font-size: clamp(2rem, 8vw, 3.6rem);
-  text-transform: uppercase; line-height: 1.05;
-  margin-top: .7rem;
+.escena-nombre {
+  font-family: var(--fuente-script); font-weight: 700;
+  color: var(--amarillo);
+  font-size: clamp(2.8rem, 9vw, 4.8rem); line-height: .95;
+  margin: .5rem 0 .2rem;
+  text-shadow: 0 6px 26px rgba(0,0,0,.55);
+  animation: subeEntra .55s cubic-bezier(.2,.8,.2,1);
 }
-.hero h1 .script {
-  display: block; font-family: var(--fuente-script);
-  text-transform: none; color: var(--amarillo);
-  font-size: clamp(2.2rem, 9vw, 4rem); font-weight: 700;
-  transform: rotate(-2deg);
+.escena-desc {
+  font-size: clamp(.95rem, 2.5vw, 1.15rem);
+  color: var(--crema); text-shadow: 0 2px 12px rgba(0,0,0,.6);
+  animation: subeEntra .55s .06s backwards cubic-bezier(.2,.8,.2,1);
 }
-.hero p.sub { opacity: .75; max-width: 34ch; margin: .6rem auto 0; }
+@keyframes subeEntra { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.escena-acciones { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.1rem; }
 
-/* la rueda */
-.rueda-envoltorio {
-  position: relative;
-  width: min(88vw, 460px);
-  aspect-ratio: 1;
-  margin: 1.6rem auto 0;
-  touch-action: none;
-  user-select: none;
+/* sellos = selector de sabor (esencia de la rueda) */
+.sellos {
+  position: absolute; z-index: 5;
+  right: clamp(1rem, 4vw, 2.5rem); bottom: 1.4rem;
+  display: flex; gap: .7rem;
 }
-.rueda-marca {
-  /* muesca superior que indica el plato elegido */
-  position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-  width: 0; height: 0; z-index: 5;
-  border-left: 11px solid transparent;
-  border-right: 11px solid transparent;
-  border-top: 16px solid var(--amarillo);
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,.5));
-}
-.rueda {
-  position: absolute; inset: 0;
-  border-radius: 50%;
-  border: 1px dashed rgba(247, 234, 214, .18);
-  will-change: transform;
-}
-.rueda-item {
-  position: absolute; top: 50%; left: 50%;
-  width: 92px; margin: -46px;
-  text-align: center;
-  cursor: pointer;
-  transition: filter .25s;
-}
-.rueda-item .disco {
-  width: 74px; height: 74px; margin: 0 auto;
-  border-radius: 50%;
+.sello {
+  width: 62px; height: 62px; border-radius: 50%;
+  padding: 0; overflow: hidden;
   background: var(--carbon-2);
-  border: 2px solid var(--borde);
-  display: grid; place-items: center;
-  transition: transform .25s, border-color .25s, box-shadow .25s;
-  overflow: hidden;
+  border: 2px solid rgba(247,234,214,.35);
+  opacity: .6;
+  transition: transform .25s, border-color .25s, opacity .25s, box-shadow .25s;
 }
-.rueda-item .disco svg { width: 52px; height: 52px; }
-.rueda-item .disco img { width: 100%; height: 100%; object-fit: cover; }
-.rueda-item .etiqueta {
-  margin-top: .35rem; font-size: .68rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .06em;
-  color: var(--crema-2); opacity: .8;
-  transition: color .25s, opacity .25s;
-}
-.rueda-item.activo .disco {
-  transform: scale(1.22);
+.sello img { width: 100%; height: 100%; object-fit: cover; }
+.sello:hover { opacity: .9; transform: scale(1.05); }
+.sello.activo {
+  opacity: 1; transform: scale(1.18);
   border-color: var(--amarillo);
-  box-shadow: 0 0 0 4px rgba(242, 169, 34, .18), 0 8px 24px rgba(0,0,0,.5);
+  box-shadow: 0 0 0 4px rgba(242,169,34,.22), 0 8px 22px rgba(0,0,0,.5);
 }
-.rueda-item.activo .etiqueta { color: var(--amarillo); opacity: 1; }
+.escena-pista {
+  position: absolute; z-index: 4;
+  left: 50%; bottom: .5rem; transform: translateX(-50%);
+  font-size: .72rem; opacity: .5; letter-spacing: .04em;
+}
 
-.rueda-centro {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 38%; aspect-ratio: 1; border-radius: 50%;
-  background: var(--negro);
-  border: 3px solid var(--amarillo);
-  display: grid; place-items: center;
-  box-shadow: var(--sombra);
-  z-index: 3;
+@media (max-width: 620px) {
+  .escena { height: min(calc(100svh - 58px), 720px); min-height: 480px; }
+  .sellos { left: 50%; right: auto; transform: translateX(-50%); bottom: 1.2rem; }
+  .sello { width: 54px; height: 54px; }
+  .escena-texto { bottom: 6rem; }
+  /* en mobile la navegación es por swipe + sellos: las flechas y la
+     pista central estorban al texto, se ocultan */
+  .escena-flecha, .escena-pista { display: none; }
 }
-.rueda-centro svg { width: 78%; height: 78%; }
-
-.rueda-pie { text-align: center; margin-top: 1.1rem; }
-.rueda-pie .nombre-activo {
-  font-family: var(--fuente-script); font-size: 1.9rem;
-  font-weight: 700; color: var(--amarillo); min-height: 2.4rem;
-}
-.rueda-pie .pista { font-size: .78rem; opacity: .55; margin-top: .1rem; }
 
 /* ---------- botones ---------- */
 .btn {
@@ -522,13 +544,8 @@ footer .firma { margin-top: .4rem; font-size: .74rem; }
   footer { padding-bottom: 2rem; }
 }
 
-/* pantallas chicas: rueda más compacta y header en una línea */
+/* pantallas chicas: header en una línea */
 @media (max-width: 480px) {
   .logo-badge .logo-texto { display: none; }
   .top nav { gap: .8rem; }
-  .rueda-item { width: 76px; margin: -38px; }
-  .rueda-item .disco { width: 54px; height: 54px; }
-  .rueda-item .disco svg { width: 38px; height: 38px; }
-  .rueda-item .etiqueta { font-size: .56rem; margin-top: .25rem; }
-  .rueda-item.activo .disco { transform: scale(1.18); }
 }
