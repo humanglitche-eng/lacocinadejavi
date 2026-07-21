@@ -50,6 +50,11 @@ window.CONFIG = {
     appId: '1:720128977718:web:c54f02266e21d8aa182197',
   },
 
+  /* Mails con acceso al panel de administración (crear/editar/borrar platos).
+     Debe coincidir con la lista esAdmin() de firebase/firestore.rules.
+     TODO: confirmá qué mail(es) usa Javi/vos como admin. */
+  adminEmails: ['tukyquilme@gmail.com'],
+
   /* ------------------------------------------------------------
      VOTACIÓN — proyecto en pre-lanzamiento.
      Meta: reunir 40 votos antes del 1/10 para arrancar el sistema

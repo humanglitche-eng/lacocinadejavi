@@ -64,20 +64,26 @@
       </div>
     </section>
 
-    <!-- votar -->
+    <!-- votar (requiere cuenta) -->
     <section class="voto-seccion">
       <div class="seccion-cabeza">
-        <h2>Votá lo que <em>más te gustaría</em></h2>
-        <p>Elegí el plato que querés que Javi cocine. Tu voto suma para llegar a los 40.</p>
+        <h2>Registrate y <em>votá</em></h2>
+        <p>Para votar necesitás una cuenta: así guardamos tus datos y te avisamos. Tu voto suma para llegar a los 40.</p>
       </div>
+
+      <!-- área de login / usuario (la arma auth) -->
+      <div id="authArea" class="auth-area"></div>
+
       <div class="opciones-voto" id="opcionesVoto"></div>
-      <form class="votacion-form" id="formVoto" style="max-width:520px;margin:1.2rem auto 0">
-        <div class="fila-2">
-          <div class="campo"><label>Tu nombre</label><input name="vnombre" required placeholder="Ej: Caro"></div>
-          <div class="campo"><label>WhatsApp (para avisarte)</label><input name="vtelefono" type="tel" required placeholder="221 ..."></div>
+
+      <form class="votacion-form" id="formVoto" hidden style="max-width:520px;margin:1rem auto 0">
+        <div class="campo" id="campoWhatsapp">
+          <label>WhatsApp (para avisarte y coordinar la preventa)</label>
+          <input name="vtelefono" type="tel" placeholder="221 ...">
         </div>
         <button class="btn btn-amarillo" type="submit" id="btnVotar" disabled>Elegí un plato para votar</button>
       </form>
+      <p id="yaVotaste" hidden class="ya-votaste"></p>
     </section>
 
     <!-- sugerir -->
@@ -119,6 +125,7 @@
   <script src="../js/config.js"></script>
   <script src="../js/util.js"></script>
   <script src="../js/db.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="../js/votacion.js"></script>
   <script>document.getElementById('anio').textContent = new Date().getFullYear();</script>
 </body>

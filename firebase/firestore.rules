@@ -1,14 +1,21 @@
 rules_version = '2';
 
 // LA COCINA DE JAVI — Reglas de Firestore
-// Público: crear pedidos y votos (con validación de campos).
-// Javi (autenticado): leer y gestionar todo.
+// Público: crear pedidos y votos (validados).
+// Usuarios logueados: su propio perfil.
+// Admin (allowlist de mails): gestiona todo.
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function esJavi() {
+    function logueado() {
       return request.auth != null;
+    }
+
+    // Admin por mail. Debe coincidir con CONFIG.adminEmails (js/config.js).
+    function esAdmin() {
+      return request.auth != null
+        && request.auth.token.email in ['tukyquilme@gmail.com'];
     }
 
     function textoCorto(campo, max) {
@@ -17,7 +24,13 @@ service cloud.firestore {
         && request.resource.data[campo].size() <= max;
     }
 
-    // Pedidos: cualquiera crea, solo Javi lee/gestiona (privacidad de clientes)
+    // Perfiles: cada quien lee/escribe el suyo; el admin puede leer todos.
+    match /users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || esAdmin());
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Pedidos: cualquiera crea, solo el admin lee/gestiona.
     match /pedidos/{id} {
       allow create: if textoCorto('nombre', 60)
         && textoCorto('telefono', 30)
@@ -27,45 +40,47 @@ service cloud.firestore {
         && request.resource.data.total is number
         && request.resource.data.total >= 0
         && request.resource.data.estado == 'nuevo';
-      allow read, update, delete: if esJavi();
+      allow read, update, delete: if esAdmin();
     }
 
-    // Votos: cualquiera crea y lee (nombre, opción y porciones; sin teléfono)
+    // Votos: cualquiera crea y lee (para contar). Sin teléfono en el voto.
     match /votos/{id} {
       allow create: if textoCorto('nombre', 60)
         && textoCorto('fecha', 12)
         && textoCorto('opcion', 80)
         && request.resource.data.porciones is number
         && request.resource.data.porciones >= 1
-        && request.resource.data.porciones <= 10
+        && request.resource.data.porciones <= 40
         && !('telefono' in request.resource.data);
       allow read: if true;
-      allow update, delete: if esJavi();
+      allow update, delete: if esAdmin();
     }
 
-    // Contacto de los votantes: se crea junto al voto, solo Javi lo lee
+    // Contacto de votantes: se crea junto al voto, solo el admin lo lee.
     match /votos_contacto/{id} {
       allow create: if textoCorto('telefono', 30);
-      allow read, update, delete: if esJavi();
+      allow read, update, delete: if esAdmin();
     }
 
-    // Config pública (votación activa de la semana): lee cualquiera, escribe Javi
+    // Config pública (parámetros): lee cualquiera, escribe el admin.
     match /config/{id} {
       allow read: if true;
-      allow write: if esJavi();
+      allow write: if esAdmin();
     }
 
-    // Sugerencias de platos: cualquiera crea (validado), solo Javi lee
-    // (privado para evitar contenido ofensivo mostrado al público)
+    // Sugerencias de platos: cualquiera crea (validado), solo el admin lee.
     match /sugerencias/{id} {
-      allow create: if textoCorto('nombre', 60)
-        && textoCorto('plato', 80);
-      allow read, update, delete: if esJavi();
+      allow create: if textoCorto('nombre', 60) && textoCorto('plato', 80);
+      allow read, update, delete: if esAdmin();
     }
 
-    // Gastos: solo Javi
+    // Gastos y platos/rondas (fase 2): solo el admin.
     match /gastos/{id} {
-      allow read, write: if esJavi();
+      allow read, write: if esAdmin();
+    }
+    match /platos/{id} {
+      allow read: if true;                 // el público ve los platos a votar
+      allow write: if esAdmin();
     }
   }
 }

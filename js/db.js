@@ -105,6 +105,29 @@ window.DB = (function () {
     return { demo: false };
   }
 
+  // ¿este usuario ya votó en esta campaña? (uno por persona)
+  async function yaVoto(fecha, uid) {
+    if (!activo) return _ls('lcj_votos').some(v => v.fecha === fecha && v.uid === uid);
+    const { db } = await _firebase();
+    const snap = await db.collection('votos').doc(`${fecha}__${uid}`).get();
+    return snap.exists ? snap.data() : null;
+  }
+
+  // voto de un usuario logueado (docId = fecha__uid → uno por persona)
+  async function guardarVotoUsuario(voto) {
+    voto.ts = Date.now();
+    const id = `${voto.fecha}__${voto.uid}`;
+    if (!activo) {
+      const arr = _ls('lcj_votos').filter(v => !(v.fecha === voto.fecha && v.uid === voto.uid));
+      arr.push({ id, ...voto });
+      _ls('lcj_votos', arr);
+      return { demo: true };
+    }
+    const { db } = await _firebase();
+    await db.collection('votos').doc(id).set(voto);
+    return { demo: false };
+  }
+
   async function guardarSugerencia(sug) {
     sug.ts = Date.now();
     if (!activo) {
@@ -117,5 +140,5 @@ window.DB = (function () {
     return { demo: false };
   }
 
-  return { activo, firebase: _firebase, guardarPedido, obtenerVotacion, guardarVoto, guardarSugerencia, _ls };
+  return { activo, firebase: _firebase, guardarPedido, obtenerVotacion, guardarVoto, guardarVotoUsuario, yaVoto, guardarSugerencia, _ls };
 })();
