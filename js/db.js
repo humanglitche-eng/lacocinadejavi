@@ -168,9 +168,62 @@ window.DB = (function () {
     await db.collection('platos').doc(id).delete();
   }
 
+  async function marcarPlatoUsado(id, usado) {
+    if (!activo) {
+      const a = _ls('lcj_platos'); const i = a.findIndex(x => x.id === id);
+      if (i >= 0) { a[i].usado = !!usado; _ls('lcj_platos', a); } return;
+    }
+    const { db } = await _firebase();
+    await db.collection('platos').doc(id).set({ usado: !!usado }, { merge: true });
+  }
+
+  /* ---------- preventa (fase 3) ---------- */
+  // config/preventa: { activa, fecha } — lo controla el admin
+  async function obtenerPreventa() {
+    if (!activo) { const c = _ls('lcj_preventa_cfg'); return (c && !Array.isArray(c)) ? c : { activa: false }; }
+    const { db } = await _firebase();
+    const doc = await db.collection('config').doc('preventa').get();
+    return doc.exists ? doc.data() : { activa: false };
+  }
+  async function setPreventa(cfg) {
+    if (!activo) { _ls('lcj_preventa_cfg', cfg); return; }
+    const { db } = await _firebase();
+    await db.collection('config').doc('preventa').set(cfg, { merge: true });
+  }
+
+  async function guardarReserva(r) { // { fecha, uid, platoId, porciones }
+    r.ts = Date.now();
+    const id = `${r.fecha}__${r.uid}`;
+    if (!activo) {
+      const a = _ls('lcj_preventa').filter(x => !(x.fecha === r.fecha && x.uid === r.uid));
+      a.push({ id, ...r }); _ls('lcj_preventa', a); return;
+    }
+    const { db } = await _firebase();
+    await db.collection('preventa').doc(id).set(r);
+  }
+  async function miReserva(fecha, uid) {
+    if (!activo) return _ls('lcj_preventa').find(x => x.fecha === fecha && x.uid === uid) || null;
+    const { db } = await _firebase();
+    const s = await db.collection('preventa').doc(`${fecha}__${uid}`).get();
+    return s.exists ? s.data() : null;
+  }
+  async function contarReservas(fecha) {
+    let docs;
+    if (!activo) docs = _ls('lcj_preventa').filter(x => x.fecha === fecha);
+    else {
+      const { db } = await _firebase();
+      const q = await db.collection('preventa').where('fecha', '==', fecha).get();
+      docs = q.docs.map(d => d.data());
+    }
+    const porPlato = {}; let personas = 0, porciones = 0;
+    docs.forEach(x => { porPlato[x.platoId] = (porPlato[x.platoId] || 0) + (x.porciones || 1); personas++; porciones += (x.porciones || 1); });
+    return { porPlato, personas, porciones };
+  }
+
   return {
     activo, firebase: _firebase, guardarPedido, obtenerVotacion, guardarVoto,
     guardarVotoUsuario, yaVoto, guardarSugerencia,
-    listarPlatos, guardarPlato, borrarPlato, _ls,
+    listarPlatos, guardarPlato, borrarPlato, marcarPlatoUsado,
+    obtenerPreventa, setPreventa, guardarReserva, miReserva, contarReservas, _ls,
   };
 })();

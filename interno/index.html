@@ -106,7 +106,20 @@
 
     <div class="vista" id="vista-platos">
       <div class="aviso-demo" style="display:none;margin-bottom:1rem">🔧 MODO DEMO — platos de ejemplo (se guardan en este navegador)</div>
-      <p style="opacity:.75;font-size:.9rem;margin-bottom:.8rem">Cargá hasta <b>3 platos por día</b>. Cada uno con nombre, explicación y foto — así se muestran en la votación.</p>
+
+      <!-- control de preventa -->
+      <div class="preventa-control" id="preventaControl">
+        <b>🗳️ Ronda de preventa</b>
+        <p style="opacity:.75;font-size:.85rem;margin:.2rem 0 .6rem">Activá la ronda cuando lleguen los 40. La web muestra los platos de ese día para reservar.</p>
+        <div class="fila-preventa">
+          <label class="switch"><input type="checkbox" id="pvActiva"><span>Preventa activa</span></label>
+          <input type="date" id="pvFecha">
+          <button class="btn btn-amarillo" id="pvGuardar" style="padding:.5rem 1rem;font-size:.8rem">Guardar</button>
+        </div>
+        <p id="pvEstado" style="font-size:.82rem;margin-top:.5rem;opacity:.8"></p>
+      </div>
+
+      <p style="opacity:.75;font-size:.9rem;margin:1rem 0 .8rem">Cargá hasta <b>3 platos por día</b>. Cada uno con nombre, explicación y foto — así se muestran en la votación.</p>
       <div class="dias-selector" id="diasSelector"></div>
       <div id="listaPlatos"></div>
       <button class="btn btn-amarillo" id="btnAgregarPlato" style="margin-top:1rem">＋ Agregar plato</button>

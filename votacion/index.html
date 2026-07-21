@@ -51,40 +51,54 @@
       </div>
     </section>
 
-    <!-- meta + cuenta regresiva -->
+    <!-- área de login / usuario (compartida por los dos modos) -->
     <section class="voto-seccion">
-      <div class="meta-caja" id="metaCaja">
-        <div class="meta-numeros">
-          <div class="n"><b id="metaVotos">0</b><small>votos</small></div>
-          <div class="n"><b id="metaObjetivo">40</b><small>meta</small></div>
-          <div class="n"><b id="metaDias">—</b><small>días restantes</small></div>
-        </div>
-        <div class="cupo-barra"><div class="cupo-relleno" id="cupoRelleno"></div></div>
-        <div class="meta-texto" id="metaTexto"></div>
-      </div>
-    </section>
-
-    <!-- votar (requiere cuenta) -->
-    <section class="voto-seccion">
-      <div class="seccion-cabeza">
-        <h2>Registrate y <em>votá</em></h2>
-        <p>Para votar necesitás una cuenta: así guardamos tus datos y te avisamos. Tu voto suma para llegar a los 40.</p>
-      </div>
-
-      <!-- área de login / usuario (la arma auth) -->
       <div id="authArea" class="auth-area"></div>
-
-      <div class="opciones-voto" id="opcionesVoto"></div>
-
-      <form class="votacion-form" id="formVoto" hidden style="max-width:520px;margin:1rem auto 0">
-        <div class="campo" id="campoWhatsapp">
-          <label>WhatsApp (para avisarte y coordinar la preventa)</label>
-          <input name="vtelefono" type="tel" placeholder="221 ...">
-        </div>
-        <button class="btn btn-amarillo" type="submit" id="btnVotar" disabled>Elegí un plato para votar</button>
-      </form>
-      <p id="yaVotaste" hidden class="ya-votaste"></p>
     </section>
+
+    <!-- ===== MODO PRE-LANZAMIENTO (juntar 40) ===== -->
+    <div id="bloquePrelanzamiento">
+      <section class="voto-seccion">
+        <div class="meta-caja" id="metaCaja">
+          <div class="meta-numeros">
+            <div class="n"><b id="metaVotos">0</b><small>votos</small></div>
+            <div class="n"><b id="metaObjetivo">40</b><small>meta</small></div>
+            <div class="n"><b id="metaDias">—</b><small>días restantes</small></div>
+          </div>
+          <div class="cupo-barra"><div class="cupo-relleno" id="cupoRelleno"></div></div>
+          <div class="meta-texto" id="metaTexto"></div>
+        </div>
+      </section>
+
+      <section class="voto-seccion">
+        <div class="seccion-cabeza">
+          <h2>Registrate y <em>votá</em></h2>
+          <p>Para votar necesitás una cuenta: así guardamos tus datos y te avisamos. Tu voto suma para llegar a los 40.</p>
+        </div>
+        <div class="opciones-voto" id="opcionesVoto"></div>
+        <form class="votacion-form" id="formVoto" hidden style="max-width:520px;margin:1rem auto 0">
+          <div class="campo" id="campoWhatsapp">
+            <label>WhatsApp (para avisarte y coordinar la preventa)</label>
+            <input name="vtelefono" type="tel" placeholder="221 ...">
+          </div>
+          <button class="btn btn-amarillo" type="submit" id="btnVotar" disabled>Elegí un plato para votar</button>
+        </form>
+        <p id="yaVotaste" hidden class="ya-votaste"></p>
+      </section>
+    </div>
+
+    <!-- ===== MODO PREVENTA (ronda activa) ===== -->
+    <div id="bloquePreventa" hidden>
+      <section class="voto-seccion">
+        <div class="seccion-cabeza">
+          <h2>Preventa · <em id="preventaDia"></em></h2>
+          <p><b>Reservá tu porción.</b> Es preventa: elegís tu plato y te comprometés a comprar el que gane (el más votado). El ganador se cocina ese día — el resto queda para otra ronda.</p>
+        </div>
+        <div class="platos-ronda" id="platosRonda"></div>
+        <p id="preventaResumen" class="preventa-resumen"></p>
+        <p id="preventaAviso" class="ya-votaste" hidden></p>
+      </section>
+    </div>
 
     <!-- sugerir -->
     <section class="voto-seccion">

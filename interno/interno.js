@@ -217,18 +217,39 @@
     platos = await window.DB.listarPlatos();
     pintarDiasSelector();
     pintarPlatos();
+    cargarPreventaControl();
   }
+
+  async function cargarPreventaControl() {
+    const pv = await window.DB.obtenerPreventa();
+    $('#pvActiva').checked = !!(pv && pv.activa);
+    if (pv && pv.fecha) $('#pvFecha').value = pv.fecha;
+    const est = $('#pvEstado');
+    if (pv && pv.activa && pv.fecha) {
+      const f = new Date(pv.fecha + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+      est.innerHTML = `🟢 Preventa <b>activa</b> para el <b>${f}</b>. La web muestra los platos de ese día.`;
+    } else est.innerHTML = '⚪ Preventa apagada — la web muestra la juntada de los 40.';
+  }
+
+  $('#pvGuardar').addEventListener('click', async () => {
+    const activa = $('#pvActiva').checked;
+    const fecha = $('#pvFecha').value;
+    if (activa && !fecha) { toast('Elegí la fecha de la ronda'); return; }
+    try { await window.DB.setPreventa({ activa, fecha }); toast('Preventa actualizada'); cargarPreventaControl(); }
+    catch (err) { toast('No se pudo guardar 😕'); console.error(err); }
+  });
 
   function pintarPlatos() {
     const dp = platosDelDia();
     $('#listaPlatos').innerHTML = dp.map(p => `
-      <div class="plato-card" data-id="${p.id}">
+      <div class="plato-card ${p.usado ? 'usado' : ''}" data-id="${p.id}">
         <div class="plato-thumb">${p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : '🍽️'}</div>
         <div class="plato-info">
-          <b>${p.nombre}</b>
+          <b>${p.nombre}${p.usado ? ' <span class="tag-usado">ya salió</span>' : ''}</b>
           <p>${p.explicacion || '<span style="opacity:.5">Sin explicación</span>'}</p>
         </div>
         <div class="plato-acciones">
+          <button class="mini-btn" data-usado="${p.id}" title="${p.usado ? 'Volver a disponible' : 'Marcar como ya salió (se elimina de la ronda)'}">${p.usado ? '↩️' : '🏆'}</button>
           <button class="mini-btn" data-editar="${p.id}">✏️</button>
           <button class="mini-btn" data-borrar="${p.id}">🗑️</button>
         </div>
@@ -236,6 +257,12 @@
       `<p style="opacity:.6;text-align:center;padding:1.5rem 0">Sin platos para el ${DIAS_LARGO[diaSel]}. Agregá el primero 👇</p>`;
     $$('[data-editar]').forEach(b => b.addEventListener('click', () => abrirFormPlato(platos.find(p => p.id === b.dataset.editar))));
     $$('[data-borrar]').forEach(b => b.addEventListener('click', () => borrar(b.dataset.borrar)));
+    $$('[data-usado]').forEach(b => b.addEventListener('click', async () => {
+      const p = platos.find(x => x.id === b.dataset.usado);
+      await window.DB.marcarPlatoUsado(p.id, !p.usado);
+      toast(p.usado ? 'Plato disponible de nuevo' : 'Marcado como ya salió');
+      await cargarPlatos();
+    }));
     // límite de 3 por día
     const btn = $('#btnAgregarPlato');
     if (dp.length >= MAX_PLATOS) { btn.disabled = true; btn.textContent = `Máximo ${MAX_PLATOS} por día`; }

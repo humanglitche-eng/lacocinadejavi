@@ -82,5 +82,17 @@ service cloud.firestore {
       allow read: if true;                 // el público ve los platos a votar
       allow write: if esAdmin();
     }
+
+    // Preventa (fase 3): reserva por porción de un usuario logueado.
+    // Lee cualquiera (para el conteo en vivo); crea/edita el dueño.
+    match /preventa/{id} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.porciones is number
+        && request.resource.data.porciones >= 1
+        && request.resource.data.porciones <= 20;
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
   }
 }

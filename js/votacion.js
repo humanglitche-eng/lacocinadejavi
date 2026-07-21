@@ -1,15 +1,24 @@
 /* ============================================================
-   LA COCINA DE JAVI — Página de votación (pre-lanzamiento)
-   Registro con cuenta (Google / email) + voto que suma a los 40.
+   LA COCINA DE JAVI — Página de votación
+   Dos modos:
+   · pre-lanzamiento: juntar 40 registrados que votan (interés).
+   · preventa: ronda activa con 3 platos; reservás porciones del
+     que quieras y te comprometés a comprar el ganador.
    ============================================================ */
 
 (function () {
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const CFG = window.CONFIG;
+  const DIAS_LARGO = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
+  let modo = 'prelanzamiento';
+  let preventaCfg = null;
   let opcionElegida = null;
-  let campana = null;         // datos de la campaña (obtenerVotacion)
-  let modoRegistro = false;   // toggle login/registro del form email
+  let campana = null;
+  let modoRegistro = false;
+  // preventa
+  let platosRonda = [], tally = { porPlato: {}, personas: 0, porciones: 0 }, miRes = null;
 
   const EMOJI = {};
   (CFG.votacion.variedades || []).forEach(v => { EMOJI[v.nombre] = v.emoji; });
@@ -21,8 +30,8 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('visible'), 2800);
   }
 
-  /* ==================== CAMPAÑA (meta + opciones) ==================== */
-  async function cargar() {
+  /* ==================== PRE-LANZAMIENTO ==================== */
+  async function cargarPrelanzamiento() {
     const v = await window.DB.obtenerVotacion();
     campana = v;
     const meta = v.cupo || CFG.votacion.meta;
@@ -37,7 +46,7 @@
     $('#cupoRelleno').style.width = pct + '%';
     $('#metaCaja').classList.toggle('meta-lleno', lleno);
     $('#metaTexto').innerHTML = lleno
-      ? '🎉 <b>¡Meta alcanzada!</b> Arrancamos el 1 de octubre. Te avisamos por WhatsApp.'
+      ? '🎉 <b>¡Meta alcanzada!</b> Arrancamos con la preventa. Te avisamos por WhatsApp.'
       : `Faltan <b>${meta - anotados}</b> votos y quedan <b>${dias} días</b> (hasta el ${window.UTIL.fechaLarga(v.fecha)}). ¡Sumá al barrio!`;
 
     const maxV = Math.max(1, ...Object.values(v.porOpcion || {}));
@@ -61,14 +70,136 @@
     if (window.AUTH.user()) { btn.disabled = false; btn.textContent = `Votar ${o}`; }
   }
 
+  $('#formVoto').addEventListener('submit', async e => {
+    e.preventDefault();
+    const u = window.AUTH.user();
+    if (!u) { toast('Entrá con tu cuenta para votar 🙂'); return; }
+    if (!opcionElegida) { toast('Elegí un plato primero 🍲'); return; }
+    const btn = $('#btnVotar'); btn.disabled = true; btn.textContent = 'Enviando…';
+    const tel = $('[name=vtelefono]', e.target).value.trim();
+    try {
+      await window.DB.guardarVotoUsuario({
+        fecha: e.target.dataset.fecha, uid: u.uid,
+        nombre: u.displayName || (u.email || '').split('@')[0] || 'vecino',
+        opcion: opcionElegida, porciones: 1,
+      });
+      if (tel) { try { await window.AUTH.guardarPerfil({ telefono: tel }); } catch {} }
+      toast(`¡Voto para ${opcionElegida}! 🙌 Gracias por sumarte`);
+      opcionElegida = null;
+      await cargarPrelanzamiento();
+      actualizarVotoUI(u);
+    } catch (err) {
+      toast('No se pudo votar 😕 Probá de nuevo'); console.error(err);
+      btn.disabled = false; btn.textContent = 'Votar';
+    }
+  });
+
+  async function actualizarVotoUI(u) {
+    if (!u) { $('#formVoto').hidden = true; $('#yaVotaste').hidden = true; return; }
+    $('#formVoto').hidden = false;
+    try { const p = await window.AUTH.perfil(); if (p && p.telefono) $('[name=vtelefono]', $('#formVoto')).value = p.telefono; } catch {}
+    const ya = await window.DB.yaVoto(campana.fecha, u.uid);
+    const yaEl = $('#yaVotaste');
+    if (ya) {
+      $('#formVoto').hidden = true; yaEl.hidden = false;
+      yaEl.innerHTML = `✅ Ya votaste por <b>${emojiDe(ya.opcion)} ${ya.opcion}</b>. ¡Gracias por sumarte!`;
+    } else yaEl.hidden = true;
+  }
+
+  /* ==================== PREVENTA ==================== */
+  async function cargarPreventa() {
+    const fecha = preventaCfg.fecha;
+    const dia = new Date(fecha + 'T12:00:00').getDay();
+    const todos = await window.DB.listarPlatos();
+    platosRonda = todos.filter(p => p.dia === dia && !p.usado)
+      .sort((a, b) => (a.orden || 0) - (b.orden || 0)).slice(0, 3);
+    tally = await window.DB.contarReservas(fecha);
+    const u = window.AUTH.user();
+    miRes = u ? await window.DB.miReserva(fecha, u.uid) : null;
+    $('#preventaDia').textContent = new Date(fecha + 'T12:00:00')
+      .toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+    renderPreventa();
+  }
+
+  function renderPreventa() {
+    const u = window.AUTH.user();
+    const maxP = Math.max(1, ...Object.values(tally.porPlato || {}));
+    if (!platosRonda.length) {
+      $('#platosRonda').innerHTML = '<p style="opacity:.7;text-align:center">Todavía no hay platos cargados para esta ronda.</p>';
+    } else {
+      $('#platosRonda').innerHTML = platosRonda.map(p => {
+        const n = tally.porPlato[p.id] || 0;
+        const lider = n > 0 && n === maxP;
+        const mio = miRes && miRes.platoId === p.id;
+        return `<div class="prc ${lider ? 'lider' : ''} ${mio ? 'mio' : ''}">
+          <div class="prc-foto">${p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : '🍽️'}</div>
+          <div class="prc-body">
+            <b>${lider ? '👑 ' : ''}${p.nombre}</b>
+            <p>${p.explicacion || ''}</p>
+            <div class="prc-tally"><span class="prc-barra"><span style="width:${Math.round(n / maxP * 100)}%"></span></span><span class="prc-num">${n} porc.</span></div>
+            ${u ? `<div class="prc-reserva">
+              <div class="cantidad-mini">
+                <button type="button" data-menos="${p.id}">−</button>
+                <span id="cant-${p.id}">${mio ? miRes.porciones : 1}</span>
+                <button type="button" data-mas="${p.id}">+</button>
+              </div>
+              <button class="btn ${mio ? 'btn-borde' : 'btn-amarillo'}" data-reservar="${p.id}">${mio ? 'Actualizar' : 'Reservar esta'}</button>
+            </div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+    // resumen
+    if (tally.personas) {
+      $('#preventaResumen').innerHTML = `🍽️ <b>${tally.personas}</b> ${tally.personas === 1 ? 'persona reservó' : 'personas reservaron'} · <b>${tally.porciones}</b> porciones en total`;
+    } else {
+      $('#preventaResumen').textContent = 'Sé el primero en reservar tu porción.';
+    }
+    // mi reserva
+    const av = $('#preventaAviso');
+    if (miRes) {
+      const pl = platosRonda.find(p => p.id === miRes.platoId);
+      av.hidden = false;
+      av.innerHTML = `✅ Reservaste <b>${miRes.porciones}</b> ${miRes.porciones === 1 ? 'porción' : 'porciones'}${pl ? ` de <b>${pl.nombre}</b>` : ''}. Si gana, te lo confirmamos por WhatsApp.`;
+    } else av.hidden = true;
+    // login prompt si no está logueado
+    if (!u) {
+      $('#preventaResumen').innerHTML += '<br><span style="opacity:.7">Entrá con tu cuenta (arriba) para reservar.</span>';
+    }
+    cablearReserva();
+  }
+
+  function cablearReserva() {
+    $$('[data-mas]').forEach(b => b.addEventListener('click', () => {
+      const el = $('#cant-' + b.dataset.mas); el.textContent = Math.min(20, +el.textContent + 1);
+    }));
+    $$('[data-menos]').forEach(b => b.addEventListener('click', () => {
+      const el = $('#cant-' + b.dataset.menos); el.textContent = Math.max(1, +el.textContent - 1);
+    }));
+    $$('[data-reservar]').forEach(b => b.addEventListener('click', () => reservar(b.dataset.reservar)));
+  }
+
+  async function reservar(platoId) {
+    const u = window.AUTH.user();
+    if (!u) { toast('Entrá con tu cuenta para reservar 🙂'); return; }
+    const porciones = +$('#cant-' + platoId).textContent || 1;
+    try {
+      await window.DB.guardarReserva({
+        fecha: preventaCfg.fecha, uid: u.uid, platoId, porciones,
+      });
+      // guardar whatsapp del perfil si no lo tiene
+      const pl = platosRonda.find(p => p.id === platoId);
+      toast(`¡Reservaste ${porciones} de ${pl ? pl.nombre : 'tu plato'}! 🙌`);
+      await cargarPreventa();
+    } catch (err) { toast('No se pudo reservar 😕 Probá de nuevo'); console.error(err); }
+  }
+
   /* ==================== AUTENTICACIÓN ==================== */
   async function renderAuth(u) {
     const area = $('#authArea');
     if (!window.AUTH.activo) {
       area.innerHTML = '<div class="aviso-demo" style="display:block">🔧 MODO DEMO — el login se activa con Firebase.</div>';
-      return;
-    }
-    if (u) {
+    } else if (u) {
       const nombre = u.displayName || (u.email || '').split('@')[0] || 'vecino';
       area.innerHTML = `<div class="user-chip">
         ${u.photoURL ? `<img src="${u.photoURL}" alt="">` : '<span class="user-ini">👤</span>'}
@@ -76,23 +207,13 @@
         <button class="user-salir" id="btnLogout">salir</button>
       </div>`;
       $('#btnLogout').addEventListener('click', () => window.AUTH.logout());
-      $('#formVoto').hidden = false;
-      // prefill whatsapp desde el perfil
-      try { const p = await window.AUTH.perfil(); if (p && p.telefono) $('[name=vtelefono]', $('#formVoto')).value = p.telefono; } catch {}
-      // ¿ya votó?
-      const ya = await window.DB.yaVoto(campana.fecha, u.uid);
-      const yaEl = $('#yaVotaste');
-      if (ya) {
-        $('#formVoto').hidden = true;
-        yaEl.hidden = false;
-        yaEl.innerHTML = `✅ Ya votaste por <b>${emojiDe(ya.opcion)} ${ya.opcion}</b>. ¡Gracias por sumarte!`;
-      } else { yaEl.hidden = true; }
     } else {
       area.innerHTML = tarjetaLogin();
-      $('#formVoto').hidden = true;
-      $('#yaVotaste').hidden = true;
       cablearLogin();
     }
+    // refrescar la UI del modo activo según el login
+    if (modo === 'preventa') { await cargarPreventa(); }
+    else { await actualizarVotoUI(u); }
   }
 
   function tarjetaLogin() {
@@ -115,8 +236,7 @@
 
   function cablearLogin() {
     $('#btnGoogle').addEventListener('click', async () => {
-      try { await window.AUTH.loginGoogle(); }
-      catch (e) { mostrarError(traducirError(e)); }
+      try { await window.AUTH.loginGoogle(); } catch (e) { mostrarError(traducirError(e)); }
     });
     $('#toggleRegistro').addEventListener('click', e => {
       e.preventDefault();
@@ -126,7 +246,7 @@
       $('.login-toggle').innerHTML = modoRegistro
         ? '¿Ya tenés cuenta? <a href="#" id="toggleRegistro">Entrá</a>'
         : '¿No tenés cuenta? <a href="#" id="toggleRegistro">Registrate</a>';
-      cablearLogin(); // re-cablea el nuevo enlace
+      cablearLogin();
     });
     $('#formEmail').addEventListener('submit', async e => {
       e.preventDefault();
@@ -151,33 +271,6 @@
     return 'No se pudo. Probá de nuevo.';
   }
 
-  /* ==================== VOTAR ==================== */
-  $('#formVoto').addEventListener('submit', async e => {
-    e.preventDefault();
-    const u = window.AUTH.user();
-    if (!u) { toast('Entrá con tu cuenta para votar 🙂'); return; }
-    if (!opcionElegida) { toast('Elegí un plato primero 🍲'); return; }
-    const btn = $('#btnVotar'); btn.disabled = true; btn.textContent = 'Enviando…';
-    const tel = $('[name=vtelefono]', e.target).value.trim();
-    try {
-      await window.DB.guardarVotoUsuario({
-        fecha: e.target.dataset.fecha,
-        uid: u.uid,
-        nombre: u.displayName || (u.email || '').split('@')[0] || 'vecino',
-        opcion: opcionElegida,
-        porciones: 1,
-      });
-      if (tel) { try { await window.AUTH.guardarPerfil({ telefono: tel }); } catch {} }
-      toast(`¡Voto para ${opcionElegida}! 🙌 Gracias por sumarte`);
-      opcionElegida = null;
-      await cargar();
-      await renderAuth(u);
-    } catch (err) {
-      toast('No se pudo votar 😕 Probá de nuevo'); console.error(err);
-      btn.disabled = false; btn.textContent = 'Votar';
-    }
-  });
-
   /* ==================== SUGERIR (WhatsApp) ==================== */
   $('#formSugerencia').addEventListener('submit', e => {
     e.preventDefault();
@@ -191,8 +284,8 @@
   });
 
   /* ==================== COMPARTIR ==================== */
-  const textoCompartir = '🥟 En La cocina de Javi estamos votando qué comida casera sumar (guisos, pastas, milanesas y más). ¡Sumate y votá antes del 1/10!';
   const url = location.href.split('#')[0];
+  const textoCompartir = '🥟 En La cocina de Javi estamos votando qué comida casera sumar (guisos, pastas, milanesas y más). ¡Sumate y votá antes del 1/10!';
   $('#compartirWa').href = window.UTIL.compartirWhatsApp(`${textoCompartir}\n${url}`);
   $('#compartirCopiar').addEventListener('click', async () => {
     const ok = await window.UTIL.copiar(url);
@@ -201,7 +294,17 @@
 
   /* ==================== INIT ==================== */
   (async () => {
-    await cargar();
+    if (!window.AUTH.activo) $$('.aviso-demo').forEach(el => el.style.display = '');
+    preventaCfg = await window.DB.obtenerPreventa();
+    if (preventaCfg && preventaCfg.activa && preventaCfg.fecha) {
+      modo = 'preventa';
+      $('#bloquePrelanzamiento').hidden = true;
+      $('#bloquePreventa').hidden = false;
+      await cargarPreventa();
+    } else {
+      modo = 'prelanzamiento';
+      await cargarPrelanzamiento();
+    }
     window.AUTH.onUser(u => renderAuth(u));
     window.AUTH.init();
   })();
