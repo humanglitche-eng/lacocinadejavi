@@ -681,3 +681,50 @@ footer .firma { margin-top: .4rem; font-size: .74rem; }
   font-size: .82rem; text-decoration: underline; cursor: pointer;
 }
 .ya-votaste { text-align: center; color: var(--amarillo); margin-top: 1rem; font-size: 1rem; }
+
+/* ---------- admin: platos por ronda ---------- */
+.dias-selector { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.dia-btn {
+  position: relative; padding: .5rem .9rem; border-radius: 999px;
+  border: 1px solid var(--borde); background: var(--carbon-2); color: var(--crema);
+  font-size: .82rem; font-weight: 600;
+}
+.dia-btn.activo { background: var(--amarillo); color: var(--negro); border-color: var(--amarillo); }
+.dia-btn .dia-n {
+  display: inline-grid; place-items: center; margin-left: .35rem;
+  min-width: 18px; height: 18px; border-radius: 999px;
+  background: var(--rojo); color: #fff; font-size: .68rem;
+}
+.dia-btn.activo .dia-n { background: var(--negro); color: var(--amarillo); }
+
+.plato-card {
+  display: flex; align-items: center; gap: .9rem;
+  background: var(--carbon); border: 1px solid var(--borde);
+  border-radius: 12px; padding: .8rem; margin-bottom: .7rem;
+}
+.plato-thumb {
+  width: 64px; height: 64px; flex: none; border-radius: 10px;
+  background: var(--carbon-2); display: grid; place-items: center;
+  overflow: hidden; font-size: 1.6rem;
+}
+.plato-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.plato-info { flex: 1; min-width: 0; }
+.plato-info b { display: block; }
+.plato-info p { font-size: .85rem; opacity: .8; margin-top: .15rem; }
+.plato-acciones { display: flex; gap: .4rem; flex: none; }
+.mini-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1px solid var(--borde); background: var(--carbon-2); font-size: 1rem;
+}
+.mini-btn:hover { border-color: var(--amarillo); }
+
+.plato-form {
+  background: var(--carbon); border: 1px solid var(--amarillo);
+  border-radius: 12px; padding: 1.1rem; margin-top: 1rem;
+  display: grid; gap: .7rem;
+}
+.plato-preview img { max-width: 160px; border-radius: 10px; }
+.plato-form textarea {
+  width: 100%; padding: .75rem .9rem; background: var(--carbon-2); color: var(--crema);
+  border: 1px solid var(--borde); border-radius: 8px; font-family: inherit; resize: vertical;
+}

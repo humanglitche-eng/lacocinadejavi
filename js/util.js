@@ -54,5 +54,26 @@ window.UTIL = (function () {
     catch { return false; }
   }
 
-  return { estadoAtencion, diasHasta, fechaLarga, compartirWhatsApp, copiar };
+  /* Comprime una imagen (File) a JPEG data URL, achicando el lado mayor
+     a maxLado px. Ideal para guardar fotos chicas en Firestore sin Storage. */
+  function comprimirImagen(file, maxLado, calidad) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const m = Math.max(w, h), lim = maxLado || 800;
+        if (m > lim) { const s = lim / m; w = Math.round(w * s); h = Math.round(h * s); }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', calidad || 0.72));
+      };
+      img.onerror = rej;
+      img.src = url;
+    });
+  }
+
+  return { estadoAtencion, diasHasta, fechaLarga, compartirWhatsApp, copiar, comprimirImagen };
 })();

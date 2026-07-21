@@ -140,5 +140,37 @@ window.DB = (function () {
     return { demo: false };
   }
 
-  return { activo, firebase: _firebase, guardarPedido, obtenerVotacion, guardarVoto, guardarVotoUsuario, yaVoto, guardarSugerencia, _ls };
+  /* ---------- platos por ronda (fase 2, admin) ---------- */
+  async function listarPlatos() {
+    if (!activo) return _ls('lcj_platos');
+    const { db } = await _firebase();
+    const q = await db.collection('platos').get();
+    return q.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  async function guardarPlato(p) {
+    p.ts = p.ts || Date.now();
+    if (!activo) {
+      const arr = _ls('lcj_platos');
+      if (p.id) { const i = arr.findIndex(x => x.id === p.id); if (i >= 0) arr[i] = p; else arr.push(p); }
+      else { p.id = _id(); arr.push(p); }
+      _ls('lcj_platos', arr);
+      return p;
+    }
+    const { db } = await _firebase();
+    if (p.id) { const { id, ...data } = p; await db.collection('platos').doc(id).set(data, { merge: true }); return p; }
+    const ref = await db.collection('platos').add(p); p.id = ref.id; return p;
+  }
+
+  async function borrarPlato(id) {
+    if (!activo) { _ls('lcj_platos', _ls('lcj_platos').filter(x => x.id !== id)); return; }
+    const { db } = await _firebase();
+    await db.collection('platos').doc(id).delete();
+  }
+
+  return {
+    activo, firebase: _firebase, guardarPedido, obtenerVotacion, guardarVoto,
+    guardarVotoUsuario, yaVoto, guardarSugerencia,
+    listarPlatos, guardarPlato, borrarPlato, _ls,
+  };
 })();

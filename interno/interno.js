@@ -30,27 +30,53 @@
 
   let pedidos = [], gastos = [];
 
-  /* ---------------- login ---------------- */
-  const demo = !window.DB.activo;
+  /* ---------------- login (AUTH + gate de admin) ---------------- */
+  const demo = !window.AUTH.activo;
+  let entrado = false;
+
+  function errorLogin(msg) { const el = $('#loginError'); el.style.display = ''; el.textContent = msg; }
+
   if (demo) {
     $('#loginDemo').style.display = '';
     $('#campoEmail').style.display = 'none';
     $('#campoClave').style.display = 'none';
+  } else {
+    $('#btnGoogle').style.display = '';
+    $('#oSep').style.display = '';
   }
 
   $('#btnEntrar').addEventListener('click', async () => {
     if (demo) { entrar(); return; }
-    try {
-      const { auth } = await window.DB.firebase();
-      await auth.signInWithEmailAndPassword($('#email').value, $('#clave').value);
-      entrar();
-    } catch (e) {
-      const el = $('#loginError');
-      el.style.display = ''; el.textContent = 'No se pudo entrar: revisá email y contraseña.';
-    }
+    try { await window.AUTH.loginEmail($('#email').value, $('#clave').value); }
+    catch (e) { errorLogin('No se pudo entrar: revisá email y contraseña.'); }
+  });
+  $('#btnGoogle').addEventListener('click', async () => {
+    try { await window.AUTH.loginGoogle(); }
+    catch (e) { errorLogin('No se pudo entrar con Google. Probá de nuevo.'); }
   });
 
+  if (!demo) {
+    window.AUTH.onUser(u => {
+      if (!u) { $('#login').style.display = ''; $('#panel').style.display = 'none'; return; }
+      if (!window.AUTH.esAdmin()) {
+        $('#login').style.display = '';
+        errorLogin(`La cuenta ${u.email || ''} no tiene permiso de admin. Cerrá sesión y entrá con la cuenta autorizada.`);
+        // botón salir para cambiar de cuenta
+        if (!$('#btnSalirNoAdmin')) {
+          const b = document.createElement('button');
+          b.id = 'btnSalirNoAdmin'; b.className = 'btn btn-borde'; b.textContent = 'Cerrar sesión';
+          b.onclick = () => window.AUTH.logout();
+          $('#login').appendChild(b);
+        }
+        return;
+      }
+      entrar();
+    });
+    window.AUTH.init();
+  }
+
   async function entrar() {
+    if (entrado) return; entrado = true;
     $('#login').style.display = 'none';
     $('#panel').style.display = '';
     if (demo) $$('#panel .aviso-demo').forEach(el => el.style.display = '');
@@ -58,6 +84,7 @@
     await cargarDatos();
     pintarComandas();
     pintarContabilidad();
+    cargarPlatos();
   }
 
   /* ---------------- datos ---------------- */
@@ -161,6 +188,119 @@
     pintarContabilidad();
     toast('Gasto registrado');
   });
+
+  /* ---------------- platos por ronda (día de semana) ---------------- */
+  const DIAS_CORTO = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const DIAS_LARGO = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const MAX_PLATOS = 3;
+  let platos = [];
+  let diaSel = new Date().getDay();
+  let fotoNueva = null; // dataURL de la foto recién elegida
+
+  function pintarDiasSelector() {
+    $('#diasSelector').innerHTML = DIAS_CORTO.map((d, i) => {
+      const n = platos.filter(p => p.dia === i).length;
+      return `<button type="button" class="dia-btn ${i === diaSel ? 'activo' : ''}" data-dia="${i}">
+        ${d}${n ? `<span class="dia-n">${n}</span>` : ''}
+      </button>`;
+    }).join('');
+    $$('#diasSelector .dia-btn').forEach(b => b.addEventListener('click', () => {
+      diaSel = +b.dataset.dia; cerrarFormPlato(); pintarDiasSelector(); pintarPlatos();
+    }));
+  }
+
+  function platosDelDia() {
+    return platos.filter(p => p.dia === diaSel).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+  }
+
+  async function cargarPlatos() {
+    platos = await window.DB.listarPlatos();
+    pintarDiasSelector();
+    pintarPlatos();
+  }
+
+  function pintarPlatos() {
+    const dp = platosDelDia();
+    $('#listaPlatos').innerHTML = dp.map(p => `
+      <div class="plato-card" data-id="${p.id}">
+        <div class="plato-thumb">${p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : '🍽️'}</div>
+        <div class="plato-info">
+          <b>${p.nombre}</b>
+          <p>${p.explicacion || '<span style="opacity:.5">Sin explicación</span>'}</p>
+        </div>
+        <div class="plato-acciones">
+          <button class="mini-btn" data-editar="${p.id}">✏️</button>
+          <button class="mini-btn" data-borrar="${p.id}">🗑️</button>
+        </div>
+      </div>`).join('') ||
+      `<p style="opacity:.6;text-align:center;padding:1.5rem 0">Sin platos para el ${DIAS_LARGO[diaSel]}. Agregá el primero 👇</p>`;
+    $$('[data-editar]').forEach(b => b.addEventListener('click', () => abrirFormPlato(platos.find(p => p.id === b.dataset.editar))));
+    $$('[data-borrar]').forEach(b => b.addEventListener('click', () => borrar(b.dataset.borrar)));
+    // límite de 3 por día
+    const btn = $('#btnAgregarPlato');
+    if (dp.length >= MAX_PLATOS) { btn.disabled = true; btn.textContent = `Máximo ${MAX_PLATOS} por día`; }
+    else { btn.disabled = false; btn.textContent = '＋ Agregar plato'; }
+  }
+
+  function abrirFormPlato(p) {
+    const f = $('#formPlato');
+    fotoNueva = null;
+    f.id.value = p ? p.id : '';
+    f.dia.value = diaSel;
+    f.nombre.value = p ? p.nombre : '';
+    f.explicacion.value = p ? (p.explicacion || '') : '';
+    f.foto.value = '';
+    $('#platoFormTitulo').textContent = p ? 'Editar plato' : `Nuevo plato · ${DIAS_LARGO[diaSel]}`;
+    const prev = $('#platoPreview'), img = $('#platoPreviewImg');
+    if (p && p.foto) { img.src = p.foto; prev.hidden = false; } else { prev.hidden = true; }
+    f.hidden = false;
+    f.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function cerrarFormPlato() { $('#formPlato').hidden = true; }
+
+  $('#btnAgregarPlato').addEventListener('click', () => abrirFormPlato(null));
+  $('#cancelarPlato').addEventListener('click', cerrarFormPlato);
+
+  $('#formPlato').foto.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      fotoNueva = await window.UTIL.comprimirImagen(file, 800, 0.72);
+      $('#platoPreviewImg').src = fotoNueva;
+      $('#platoPreview').hidden = false;
+    } catch { toast('No se pudo leer la imagen'); }
+  });
+
+  $('#formPlato').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target;
+    const btn = $('#btnGuardarPlato'); btn.disabled = true; btn.textContent = 'Guardando…';
+    const existente = f.id.value ? platos.find(p => p.id === f.id.value) : null;
+    const plato = {
+      dia: +f.dia.value,
+      nombre: f.nombre.value.trim(),
+      explicacion: f.explicacion.value.trim(),
+      foto: fotoNueva || (existente ? existente.foto || '' : ''),
+      orden: existente ? (existente.orden || 0) : platosDelDia().length,
+    };
+    if (f.id.value) plato.id = f.id.value;
+    try {
+      await window.DB.guardarPlato(plato);
+      toast(f.id.value ? 'Plato actualizado' : 'Plato agregado');
+      cerrarFormPlato();
+      await cargarPlatos();
+    } catch (err) {
+      toast('No se pudo guardar 😕'); console.error(err);
+    }
+    btn.disabled = false; btn.textContent = 'Guardar plato';
+  });
+
+  async function borrar(id) {
+    const p = platos.find(x => x.id === id);
+    if (!p || !confirm(`¿Borrar "${p.nombre}"?`)) return;
+    try { await window.DB.borrarPlato(id); toast('Plato borrado'); await cargarPlatos(); }
+    catch (err) { toast('No se pudo borrar 😕'); console.error(err); }
+  }
 
   /* ---------------- tabs ---------------- */
   $$('.panel-tabs button').forEach(b => b.addEventListener('click', () => {

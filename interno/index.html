@@ -75,10 +75,15 @@
 
   <!-- LOGIN -->
   <div class="login-caja" id="login">
-    <h2>Hola, <em>Javi</em> 👨‍🍳</h2>
+    <h2>Panel de <em>La cocina de Javi</em> 👨‍🍳</h2>
     <div class="aviso-demo" id="loginDemo" style="display:none">
       🔧 MODO DEMO — sin Firebase configurado el panel muestra datos de ejemplo. Entrá directo.
     </div>
+    <button class="btn btn-google" id="btnGoogle" type="button" style="display:none">
+      <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.3 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.2 13.2 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.1 5.3-4.6 7l7.1 5.5c4.2-3.9 6.2-9.6 6.2-17z"/><path fill="#FBBC05" d="M10.4 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-7.1-5.5c-2 1.3-4.5 2.1-8.4 2.1-6.4 0-11.8-3.7-13.6-8.9l-7.9 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+      Entrar con Google
+    </button>
+    <div class="o-sep" id="oSep" style="display:none"><span>o con email</span></div>
     <div class="campo" id="campoEmail" style="text-align:left"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
     <div class="campo" id="campoClave" style="text-align:left"><label>Contraseña</label><input id="clave" type="password" autocomplete="current-password"></div>
     <button class="btn btn-amarillo" id="btnEntrar">Entrar</button>
@@ -89,6 +94,7 @@
   <div id="panel" style="display:none">
     <div class="panel-tabs">
       <button data-vista="comandas" class="activa">🧾 Comandas</button>
+      <button data-vista="platos">🍲 Platos</button>
       <button data-vista="contabilidad">💰 Contabilidad</button>
       <button data-vista="stream">📡 Stream</button>
     </div>
@@ -96,6 +102,27 @@
     <div class="vista activa" id="vista-comandas">
       <div class="aviso-demo" style="display:none;margin-bottom:1rem">🔧 MODO DEMO — comandas de ejemplo</div>
       <div id="listaComandas"></div>
+    </div>
+
+    <div class="vista" id="vista-platos">
+      <div class="aviso-demo" style="display:none;margin-bottom:1rem">🔧 MODO DEMO — platos de ejemplo (se guardan en este navegador)</div>
+      <p style="opacity:.75;font-size:.9rem;margin-bottom:.8rem">Cargá hasta <b>3 platos por día</b>. Cada uno con nombre, explicación y foto — así se muestran en la votación.</p>
+      <div class="dias-selector" id="diasSelector"></div>
+      <div id="listaPlatos"></div>
+      <button class="btn btn-amarillo" id="btnAgregarPlato" style="margin-top:1rem">＋ Agregar plato</button>
+
+      <form id="formPlato" class="plato-form" hidden>
+        <h3 id="platoFormTitulo" style="font-family:var(--fuente-titulo);text-transform:uppercase;font-size:1rem">Nuevo plato</h3>
+        <input type="hidden" name="id"><input type="hidden" name="dia">
+        <div class="campo"><label>Nombre del plato</label><input name="nombre" required maxlength="60" placeholder="Ej: Guiso de lentejas"></div>
+        <div class="campo"><label>Explicación</label><textarea name="explicacion" rows="3" maxlength="300" placeholder="Qué lleva, cómo se sirve…"></textarea></div>
+        <div class="campo"><label>Foto</label><input name="foto" type="file" accept="image/*"></div>
+        <div class="plato-preview" id="platoPreview" hidden><img id="platoPreviewImg" alt=""></div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <button class="btn btn-amarillo" type="submit" id="btnGuardarPlato">Guardar plato</button>
+          <button class="btn btn-borde" type="button" id="cancelarPlato">Cancelar</button>
+        </div>
+      </form>
     </div>
 
     <div class="vista" id="vista-contabilidad">
@@ -142,8 +169,10 @@
   <div class="toast" id="toast"></div>
 
   <script src="../js/config.js"></script>
+  <script src="../js/util.js"></script>
   <script src="../js/menu.js"></script>
   <script src="../js/db.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="interno.js"></script>
 </body>
 </html>
